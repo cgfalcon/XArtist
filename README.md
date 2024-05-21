@@ -1,2 +1,24 @@
 # XArtist
 An virtual artist driven by AI
+
+
+# Structure of this project
+
+- backend. The flask module of our product.
+- frontend. Mainly the React page of the product.
+- training. Focus on model traning and testing.
+
+
+# How to open the webpage?
+
+Go to the `xartist-frontend` directory by the following commend
+
+```shell
+cd xartist-fronted
+```
+
+and start the webserver in develop mode
+
+```shell
+npm run dev
+```
