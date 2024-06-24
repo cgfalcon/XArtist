@@ -197,7 +197,7 @@ def run() :
     genra_dataset = WikiArtDataset(root_dir='../wikiart/', category=CATEGORY_GENRE, transform=img_transforms,
                                    label_filters=LABEL_FILTERS)
     dataloader = DataLoader(genra_dataset, batch_size=BATCH_SIZE,
-                            shuffle=True, num_workers=1, collate_fn=custom_collate_fn)
+                            shuffle=True, num_workers=2, collate_fn=custom_collate_fn)
 
     d_model = DCGANDiscriminatorNet()
     d_model.to(device)
@@ -211,7 +211,7 @@ def run() :
     gan_model.to(device)
 
     # summarize_performance(10, g_model, d_model, None, device, BATCH_SIZE, LATENT_DIM)
-    epoch = 150
+    epoch = 200
     train_gan(g_model, d_model, gan_model, dataloader, device, epochs=epoch, batch_size=BATCH_SIZE, latent_dim=LATENT_DIM)
     save_model(epoch, g_model)
 

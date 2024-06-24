@@ -8,6 +8,14 @@ An virtual artist driven by AI
 - frontend. Mainly the React page of the product.
 - training. Focus on model traning and testing.
 
+# FrontEnd Installation
+
+```
+npm install next@latest react@latest react-dom@latest
+npm install tailwindcss@latest
+npm install @headlessui/react @heroicons/react
+```
+
 
 # How to open the webpage?
 
