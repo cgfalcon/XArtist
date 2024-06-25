@@ -1,5 +1,7 @@
+"use client"
 
 import Navbar from "../components/NavBar";
+import ArtistCanvas from "@/app/components/ArtistCanvas";
 import React from "react";
 
 interface Props {
@@ -10,11 +12,7 @@ const AnonymousArtist = () => {
   return (
       <div>
           <Navbar/>
-          <div>
-              <main>
-                  <h1>The Anonymous Artist</h1>
-              </main>
-          </div>
+          <ArtistCanvas/>
           {/* Add more sections as needed */}
       </div>
   );
