@@ -11,9 +11,8 @@ import torch.nn.functional as F
 
 from PIL import Image
 
-from datasets import WikiArtDataset
-from gan_models import *
-
+from .datasets import WikiArtDataset
+from .gan_models import *
 
 
 def generate_latent_point(n_samples, latent_dim):
@@ -41,8 +40,9 @@ def weights_init(m):
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
 
-def save_plot(samples, epoch, n=5):
+def save_plot(samples, epoch, n=3):
     # plot images
+    plt.figure(figsize=(32, 32))
     for i in range(n * n):
         # define subplot
         plt.subplot(n, n, 1 + i)
@@ -162,6 +162,9 @@ def train_gan(g_model, d_model, gan_model, train_loader, device, epochs=100, bat
             # Plot performance every 5 epoch
             summarize_performance(epoch, g_model, d_model, None, device, batch_size, latent_dim)
 
+        if (epoch + 1) % 50 == 0:
+            save_model(epoch, g_model)
+
 
 def find_device():
     device = 'cpu'
@@ -197,7 +200,7 @@ def run() :
     genra_dataset = WikiArtDataset(root_dir='../wikiart/', category=CATEGORY_GENRE, transform=img_transforms,
                                    label_filters=LABEL_FILTERS)
     dataloader = DataLoader(genra_dataset, batch_size=BATCH_SIZE,
-                            shuffle=True, num_workers=2, collate_fn=custom_collate_fn)
+                            shuffle=True, num_workers=TORCH_WORKERS, collate_fn=custom_collate_fn)
 
     d_model = DCGANDiscriminatorNet()
     d_model.to(device)
@@ -211,7 +214,7 @@ def run() :
     gan_model.to(device)
 
     # summarize_performance(10, g_model, d_model, None, device, BATCH_SIZE, LATENT_DIM)
-    epoch = 200
+    epoch = EPOCHS
     train_gan(g_model, d_model, gan_model, dataloader, device, epochs=epoch, batch_size=BATCH_SIZE, latent_dim=LATENT_DIM)
     save_model(epoch, g_model)
 
@@ -220,7 +223,7 @@ if __name__ == '__main__':
     Image.MAX_IMAGE_PIXELS = None  # Completely removes the limit
     # or set to a higher limit, for example:
     Image.MAX_IMAGE_PIXELS = 100_000_000  # set to a more suitable limit
-
+    start_ts = time.time()
     print(f'Training started ....')
     run()
-    print(f'Training finished ...')
+    print(f'Training finished ... ({(time.time() - start_ts)/1000} s)')

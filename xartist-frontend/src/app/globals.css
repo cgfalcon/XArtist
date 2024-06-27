@@ -29,3 +29,7 @@
   background: linear-gradient(to right, #8a2387, #e94057, #f27121) left bottom no-repeat;
   background-size: 100% 2px;
 }
+
+.body-container {
+  padding-top: 70px;
+}

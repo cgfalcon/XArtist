@@ -1,43 +1,28 @@
 import React, { useState, useEffect } from 'react';
 
+import CanvasBlock from "@/app/components/CanvasBlock";
+
 function ArtistCanvas() {
 
-    const images = [
-        '/wikiart_animation.gif',
-        '/wikiart_artist_animation.gif',
-    ]; // Replace paths with your image paths or URLs
+    var canvasLayout = "Grid" // "Grid" or "Single"
 
-    const [index, setIndex] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setIndex((prevIndex) => (prevIndex + 1) % images.length);
-        }, 8000); // Change image every 3000 milliseconds (3 seconds)
-
-        return () => clearInterval(interval);
-    }, []);
-
-    const nextImage = () => {
-        setIndex((index + 1) % images.length);
-    };
-
-    const prevImage = () => {
-        setIndex((index - 1 + images.length) % images.length);
-    };
-
-    return (
-        <div className="relative isolate px-6 pt-14 lg:px-8">
-            <div>
-                <img src={images[index]} alt="Slideshow" style={{width: '128px', height: '128px'}}
-                     className="h-8 w-auto"/>
+    if (canvasLayout == "Single") {
+        return (
+            <div className="relative flex">
+                <CanvasBlock/>
             </div>
-            <div>
-                <img src={images[index]} alt="Slideshow" style={{width: '128px', height: '128px'}}
-                     className="h-8 w-auto"/>
+        );
+    } else {
+        return (
+            <div className="grid grid-cols-2 gap-4">
+                <CanvasBlock/>
+                <CanvasBlock/>
             </div>
-        </div>
 
-    );
+        );
+    }
+
+
 }
 
 export default ArtistCanvas;
