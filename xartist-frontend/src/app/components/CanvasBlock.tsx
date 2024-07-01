@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from "react";
 
+import {fetchImages} from "@/app/api/route";
+
 const images = [
         '/wikiart_animation.gif',
         '/wikiart_artist_animation.gif',
@@ -19,28 +21,38 @@ function CanvasBlock() {
     useEffect(() => {
         const inter_fetch = async () => {
             try {
-                const rest = await fetch('http://localhost:5002/api/images');
-                const data = await rest.json()
-                setImages(prevImages => [...prevImages, ...data.images]);
-                cacheImages(data.images)
+                const img_b64 = await fetchImages();
+                console.log('Fetched images:', img_b64);
+                if (Array.isArray(img_b64) && img_b64.length > 0) {
+                    setImages(prevImages => {
+                        const newImages = [...prevImages, ...img_b64];
+                        console.log('Updated images state:', newImages.length);
+                        return newImages;
+                    });
+                } else {
+                    console.error('Failed to fetch images: response is not an array');
+                }
             } catch (error) {
                 console.error('Failed to fetch images:', error);
             }
-        }
+        };
 
-        const intervalId = setInterval(inter_fetch, 1000)
+        const intervalId = setInterval(inter_fetch, 1000);
 
-        return () => clearInterval(intervalId)
+        return () => clearInterval(intervalId);
     }, [])
 
     // Set looping index
-     useEffect(() => {
-        const interval = setInterval(() => {
-            setIndex((prevIndex) => (prevIndex + 1) % images.length);
-        }, 8000); // Change image every 3000 milliseconds (3 seconds)
+    useEffect(() => {
+        if (images.length > 0) {
+            console.log('Loaded index:', index);
+            const interval = setInterval(() => {
+                setIndex((prevIndex) => (prevIndex + 1) % images.length);
+            }, 85); // Change image every 3000 milliseconds (3 seconds)
 
-        return () => clearInterval(interval);
-    }, []);
+            return () => clearInterval(interval);
+        }
+    }, [images.length]);
 
     const cacheImages = (newImages) => {
         const cachedImages = JSON.parse(localStorage.getItem('cachedImages') || '[]');
@@ -58,8 +70,14 @@ function CanvasBlock() {
 
     return (
         <div className="">
-            <img src={tmp_images[index]} alt="Slideshow" style={{width: '256', height: '256'}}
-                 className="object-cover object-center w-full h-256 max-w-full rounded-lg"/>
+            {images.length > 0 && (
+                <img
+                    src={`data:image/png;base64,${images[index]}`}
+                    alt="Slideshow"
+                    style={{ width: '512px', height: '512px' }}
+                    className="object-cover object-center w-full h-256 max-w-full rounded-lg"
+                />
+            )}
         </div>
     )
 }

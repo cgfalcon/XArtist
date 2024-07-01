@@ -1,0 +1,38 @@
+
+env: dev
+
+db_config:
+  db_host: localhost:3306
+  url: mysql+mysqlconnector://{0}:{1}@{2}/{3}
+  username: uwlight_backend
+  password: uwlight12345
+  database_name: liight
+
+google_oauth:
+  client_id: 180596828410-jkc513n8suqg8u094b73rld5l680let8.apps.googleusercontent.com
+  client_secret: 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
+  redirect_url: http://127.0.0.1:5001/home
+
+logger:
+  app_logger:
+    level: DEBUG
+    format: "%(asctime)s | %(name)s | %(levelname)s | %(filename)s:%(lineno)s | %(process)d >> %(message)s"
+    filename: app.log
+  error_logger:
+    level: DEBUG
+    format: "%(asctime)s | %(name)s | %(levelname)s | %(filename)s:%(lineno)s | %(process)d >> %(message)s"
+    filename: error.log
+  flask_logger:
+    level: DEBUG
+    format: "%(asctime)s | %(name)s | %(levelname)s | %(filename)s:%(lineno)s | %(process)d >> %(message)s"
+    filename: flask.log
+
+ml_models:
+    impressionist_150:
+      name: Impressionism
+      filename: models/generator_model_impressionist_150.pt
+      epoch: 150
+      device: mps
+      framework: pytorch
+      style: Impressionism
+      model_class: DCGANGeneratorNet
