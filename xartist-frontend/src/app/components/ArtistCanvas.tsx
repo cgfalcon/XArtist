@@ -4,7 +4,7 @@ import CanvasBlock from "@/app/components/CanvasBlock";
 
 function ArtistCanvas() {
 
-    var canvasLayout = "Grid" // "Grid" or "Single"
+    var canvasLayout = "Single" // "Grid" or "Single"
 
     if (canvasLayout == "Single") {
         return (

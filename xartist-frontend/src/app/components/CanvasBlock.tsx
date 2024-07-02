@@ -74,7 +74,7 @@ function CanvasBlock() {
                 <img
                     src={`data:image/png;base64,${images[index]}`}
                     alt="Slideshow"
-                    style={{ width: '256px', height: '256px' }}
+                    style={{ width: '500px', height: '500px' }}
                     className="object-cover object-center w-full h-256 max-w-full rounded-lg"
                 />
             )}
