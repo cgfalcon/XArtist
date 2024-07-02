@@ -36,3 +36,27 @@ ml_models:
       framework: pytorch
       style: Impressionism
       model_class: DCGANGeneratorNet
+    impressionist_100:
+      name: Impressionism
+      filename: models/generator_model_impressionist_100.pt
+      epoch: 100
+      device: mps
+      framework: pytorch
+      style: Impressionism
+      model_class: DCGANGeneratorNet
+    artist_201:
+      name: Impressionism
+      filename: models/generator_model_artist_201.pt
+      epoch: 100
+      device: mps
+      framework: pytorch
+      style: Impressionism
+      model_class: DCGANGeneratorNet
+    abstract_151:
+      name: Impressionism
+      filename: models/generator_model_128_151.pt
+      epoch: 100
+      device: mps
+      framework: pytorch
+      style: Abstract
+      model_class: DCGANGeneratorNet

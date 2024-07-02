@@ -48,7 +48,7 @@ function CanvasBlock() {
             console.log('Loaded index:', index);
             const interval = setInterval(() => {
                 setIndex((prevIndex) => (prevIndex + 1) % images.length);
-            }, 85); // Change image every 3000 milliseconds (3 seconds)
+            }, 90); // Change image every 3000 milliseconds (3 seconds)
 
             return () => clearInterval(interval);
         }
@@ -74,7 +74,7 @@ function CanvasBlock() {
                 <img
                     src={`data:image/png;base64,${images[index]}`}
                     alt="Slideshow"
-                    style={{ width: '512px', height: '512px' }}
+                    style={{ width: '256px', height: '256px' }}
                     className="object-cover object-center w-full h-256 max-w-full rounded-lg"
                 />
             )}

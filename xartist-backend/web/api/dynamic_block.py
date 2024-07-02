@@ -78,7 +78,7 @@ def gen_images(ml_model):
     generated_images = []
     cost_times = []
 
-    n_sample_points = 10
+    n_sample_points = 50
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
 
