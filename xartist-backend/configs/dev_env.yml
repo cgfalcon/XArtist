@@ -60,3 +60,11 @@ ml_models:
       framework: pytorch
       style: Abstract
       model_class: DCGANGeneratorNet
+    autocoder:
+      name: Impressionism
+      filename: models/encoder.pt
+      epoch: 0
+      device: cpu
+      framework: pytorch
+      style: Abstract
+      model_class: AE
