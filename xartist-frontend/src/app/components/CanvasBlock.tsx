@@ -88,7 +88,7 @@ function CanvasBlock() {
 
     return (
         <div>
-            <div className="relative border-1 border-black p-2.5 bg-white shadow-sm">
+            <div className="relative border-black p-10 bg-white shadow-sm">
                 {images.length > 0 && (
                     <>
                         <img
@@ -97,13 +97,13 @@ function CanvasBlock() {
                             style={{width: '500px', height: '500px'}}
                             className="object-cover object-center w-full h-256 max-w-full"
                         />
-                        <div className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-80 p-3 text-sm">
-                            <p><strong>Artist:</strong> {artworkDetails.artist}</p>
-                            <p><strong>Date:</strong> {artworkDetails.dateCreated}</p>
-                            <p><strong>Material:</strong> {artworkDetails.materials}</p>
-                        </div>
                     </>
                 )}
+            </div>
+            <div className="font-light font-sans">
+                <p><strong> {artworkDetails.artist}</strong></p>
+                <p> 512 * 512, GAN</p>
+                <p> {artworkDetails.dateCreated}</p>
             </div>
             <div className="flex justify-center space-x-4 mt-4">
                 <Button
