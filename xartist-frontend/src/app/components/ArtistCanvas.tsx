@@ -8,7 +8,7 @@ function ArtistCanvas() {
 
     if (canvasLayout == "Single") {
         return (
-            <div className="grid place-items-center h-screen">
+            <div className="grid place-items-center h-screen p-0">
                 <CanvasBlock/>
             </div>
         );
