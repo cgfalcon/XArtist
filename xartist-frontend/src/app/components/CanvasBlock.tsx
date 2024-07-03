@@ -87,8 +87,8 @@ function CanvasBlock() {
     };
 
     return (
-        <div>
-            <div className="relative border-black p-10 bg-white shadow-sm">
+        <div className="flex justify-center items-center h-screen">
+            <div className="relative border-black p-10 bg-white shadow-sm group">
                 {images.length > 0 && (
                     <>
                         <img
@@ -96,58 +96,64 @@ function CanvasBlock() {
                             alt="Art Animation"
                             style={{width: '500px', height: '500px'}}
                             className="object-cover object-center w-full h-256 max-w-full"
+                            // onMouseEnter={() => setIsPlaying(false)}
+                            // onMouseLeave={() => setIsPlaying(true)}
                         />
+                        <div
+                            className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-20 p-3 text-sm flex justify-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <Button
+                                className="rounded-full flex items-center gap-3"
+                                style={{backgroundColor: '#4f45e4', color: 'white'}}
+                                buttonType="filled"
+                                block={false}
+                                iconOnly={false}
+                                onClick={togglePlayPause}
+                            >
+                                {isPlaying ?
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                         stroke-width="1.5"
+                                         stroke="currentColor" className="size-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round"
+                                              d="M15.75 5.25v13.5m-7.5-13.5v13.5"/>
+                                    </svg>
+                                    : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                           stroke-width="1.5"
+                                           stroke="currentColor" className="size-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round"
+                                              d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/>
+                                    </svg>}
+
+                                {isPlaying ? 'Pause' : 'Play'}
+                            </Button>
+                            {!isPlaying && (
+                                <Button
+                                    className="rounded-full flex items-center gap-3"
+                                    buttonType="filled"
+                                    block={false}
+                                    iconOnly={false}
+                                    onClick={handleDownload}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                         stroke-width="1.5"
+                                         stroke="currentColor" className="size-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round"
+                                              d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/>
+                                    </svg>
+                                    Download
+                                </Button>
+                            )}
+                        </div>
                     </>
                 )}
-            </div>
-            <div className="font-light font-sans">
-                <p><strong> {artworkDetails.artist}</strong></p>
-                <p> 512 * 512, GAN</p>
-                <p> {artworkDetails.dateCreated}</p>
-            </div>
-            <div className="flex justify-center space-x-4 mt-4">
-                <Button
-                    className="rounded-full flex items-center gap-3"
-                    style={{backgroundColor: '#4f45e4', color: 'white'}}
-                    buttonType="filled"
-                    block={false}
-                    iconOnly={false}
-                    onClick={togglePlayPause}
-                >
-                    {isPlaying ?
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                             stroke="currentColor" className="size-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5"/>
-                        </svg>
-                        : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                               stroke="currentColor" className="size-4">
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                                  d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/>
-                        </svg>}
 
-                    {isPlaying ? 'Pause' : 'Play'}
-                </Button>
-                {!isPlaying && (
-                    <Button
-                        className="rounded-full flex items-center gap-3"
-                        buttonType="filled"
-                        block={false}
-                        iconOnly={false}
-                        onClick={handleDownload}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                             stroke="currentColor" className="size-4">
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                                  d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/>
-                        </svg>
-                        Download
-                    </Button>
-                )}
+            </div>
+            <div className="p-5 bg-white border-l-2 border-gray-500 ">
+                <p><strong>Artist:</strong> {artworkDetails.artist}</p>
+                <p><strong>Date:</strong> {artworkDetails.dateCreated}</p>
+                <p><strong>Material:</strong> {artworkDetails.materials}</p>
             </div>
         </div>
-
     )
 }
-
 
 export default CanvasBlock;
