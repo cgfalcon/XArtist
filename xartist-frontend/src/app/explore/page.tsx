@@ -12,7 +12,6 @@ interface Props {
 const Explore = () => {
   // console.log(categories);
   return (
-      <div>
       <div className=" py-24 sm:py-32">
         <div className="mx-auto grid max-w-7xl gap-x-10 gap-y-20 px-6 lg:px-8 xl:grid-cols-2">
           <div className="max-w-2xl">
