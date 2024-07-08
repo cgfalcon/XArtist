@@ -53,7 +53,7 @@ class MLModel:
         device = _find_device()
         if str(device) != self.device:
             print(f'Incompatible device error. Local device: {device}, model device: {self.device}')
-            raise ValueError(f'Incompatible device error. Local device: {self.device}')
+            return
 
         self.device = device
 

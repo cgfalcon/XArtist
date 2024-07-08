@@ -4,11 +4,11 @@ import CanvasBlock from "@/app/components/CanvasBlock";
 
 function ArtistCanvas() {
 
-    var canvasLayout = "Grid" // "Grid" or "Single"
+    var canvasLayout = "Single" // "Grid" or "Single"
 
     if (canvasLayout == "Single") {
         return (
-            <div className="grid place-items-center h-screen">
+            <div className="grid place-items-center h-screen p-0">
                 <CanvasBlock/>
             </div>
         );

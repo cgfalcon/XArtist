@@ -302,3 +302,38 @@ class SimpleGeneratorModel(nn.Module):
     def forward(self, x):
         x = self.cons_layers(x)
         return x
+
+
+class AE(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.encoder = torch.nn.Sequential(
+
+            torch.nn.Linear(128, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 8),
+            torch.nn.ReLU(),
+            torch.nn.Linear(8, 3),
+            torch.nn.Tanh()
+
+        )
+
+        self.decoder = torch.nn.Sequential(
+
+            torch.nn.Linear(3, 8),
+            torch.nn.ReLU(),
+            torch.nn.Linear(8, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 128),
+
+            torch.nn.Tanh()
+        )
+
+    def encode(self, x):
+        encoded = self.encoder(x)
+        return encoded
+
+    def decode(self, x):
+        decoded = self.decoder(x)
+        return decoded
