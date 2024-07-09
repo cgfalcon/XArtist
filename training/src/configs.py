@@ -1,5 +1,15 @@
 
 train_configs = {
+  # Dataset Config
+  "DATASET_PATH": "..",
+
+  # Dumping Config
+  "MODEL_DUMPING_PATH": ".",
+  "IMG_DUMPING_PATH": ".",
+  "IMAGE_DUMPING_FREQUENCY": 1,
+  "MODEL_DUMPING_FREQUENCY": 1,
+
+  # Model Config
   "ARCH": "SNDCGAN64",
   "EPOCHS": 400,
   "BOTTOM_SIZE": 4,

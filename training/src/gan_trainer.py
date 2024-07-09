@@ -59,8 +59,9 @@ def save_plot(samples, epoch, n=3):
         # print(img.shape)
         plt.imshow(normalized_img)
     # save plot to file
-    filename = './generated_plot_e%03d.png' % (epoch + 1)
-    plt.savefig(filename)
+    img_filepath = f"{train_configs['IMG_DUMPING_PATH']}/generated_plot_e{(epoch + 1):03}"
+    # filename = './generated_plot_e%03d.png' % (epoch + 1)
+    plt.savefig(img_filepath)
     plt.close()
 
 def summarize_performance(epoch, g_model, d_model, test_loader, device, batch_size, latent_dim=100):
@@ -118,6 +119,10 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
     optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(0.5, 0.999))
     optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(0.5, 0.999))
     print(device)
+
+    img_dumping_freq = int(train_configs['IMAGE_DUMPING_FREQUENCY'])
+    model_dumping_freq = int(train_configs['MODEL_DUMPING_FREQUENCY'])
+
     for epoch in range(epochs):
         for b, batch_dataset in enumerate(train_loader):
             X_true, _ = batch_dataset
@@ -173,11 +178,11 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
                        'D(G(z1))': d_g_z1,
                        'D(G(z2))': d_g_z2
                        })
-        if (epoch + 1) % 1 == 0:
+        if (epoch + 1) % img_dumping_freq == 0:
             # Plot performance every 5 epoch
             summarize_performance(epoch, g_model, d_model, None, device, batch_size, latent_dim)
 
-        if (epoch + 1) % 30 == 0:
+        if (epoch + 1) % model_dumping_freq == 0:
             save_model(epoch, g_model, d_model)
 
 
@@ -193,12 +198,13 @@ def find_device():
     return device
 
 def save_model(epoch, g_model, d_model):
+    generator_dumping_path = f"{train_configs['MODEL_DUMPING_PATH']}/generator_model_{(epoch + 1):03}.pt"
     # save the generator model tile file
-    filename = './generator_model_%03d.pt' % (epoch + 1)
-    torch.save(g_model.state_dict(), filename)
+    torch.save(g_model.state_dict(), generator_dumping_path)
 
-    filename = './discriminator_model_%03d.pt' % (epoch + 1)
-    torch.save(d_model.state_dict(), filename)
+    discriminator_dumping_path = f"{train_configs['MODEL_DUMPING_PATH']}/discriminator_model_{(epoch + 1):03}.pt"
+    torch.save(d_model.state_dict(), discriminator_dumping_path)
+
 
 def custom_collate_fn(batch):
     batch = list(filter(None, batch))  # Remove None items
@@ -238,7 +244,9 @@ def run() :
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
-    genra_dataset = WikiArtDataset(root_dir='../wikiart/', category=train_configs['CATEGORY_GENRE'], transform=img_transforms,
+
+    wikiart_path = f"{train_configs['DATASET_PATH']}/wikiart/"
+    genra_dataset = WikiArtDataset(root_dir=wikiart_path, category=train_configs['CATEGORY_GENRE'], transform=img_transforms,
                                    label_filters=train_configs['LABEL_FILTERS'])
     dataloader = DataLoader(genra_dataset, batch_size=train_configs['BATCH_SIZE'],
                             shuffle=True, num_workers=train_configs['TORCH_WORKERS'], collate_fn=custom_collate_fn)
