@@ -116,63 +116,74 @@ def generator_loss(output_fake):
 
 
 
-def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500, latent_dim=100, loss_type='bce'):
-    optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(0.5, 0.999))
-    optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(0.5, 0.999))
+def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500, latent_dim=100, loss_type='bce', n_dis=1, n_gen=1):
+    adam_beta1 = train_configs['ADAM_BETA1']
+    adam_beta2 = train_configs['ADAM_BETA2']
+    optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(adam_beta1, adam_beta2))
+    optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(adam_beta1, adam_beta2))
     print(device)
 
     img_dumping_freq = int(train_configs['IMAGE_DUMPING_FREQUENCY'])
     model_dumping_freq = int(train_configs['MODEL_DUMPING_FREQUENCY'])
+    log_freq = int(train_configs['LOG_FREQUENCY'])
+    step = 0
 
     for epoch in range(epochs):
         for b, batch_dataset in enumerate(train_loader):
             X_true, _ = batch_dataset
             X_true = X_true.to(device)
 
+            step += 1
+
             y_true = torch.ones((batch_size, 1), dtype=torch.float)
             y_true = y_true.to(device)
 
-            # Phase 1: Discriminating: Focusing on updating discriminator
-            ## Generate false samples with a trained generator
+            for i in range(n_dis):
+                if i == 0:
+                    # Update Generator
+                    # Phase 2: Polishing fake examples: Focusing on updating generator
+                    # X_false, y_false = generate_false_samples_v2(g_model, device, batch_size * 2, latent_dim)
+                    X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
+                    optimizer_g.zero_grad()
+                    g_fake = d_model(X_false)
 
-            X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
+                    if loss_type == 'bce':
+                        g_loss = F.binary_cross_entropy(g_fake, torch.ones_like(g_fake))
+                    else:
+                        g_loss = -torch.mean(F.softplus(g_fake))
+                    g_loss.backward()
+                    optimizer_g.step()
+                    d_g_z2 = g_fake.mean().item()
 
-            # print(f'\tY shape, true: {y_true.shape}, false: {y_false.shape}')
-            optimizer_d.zero_grad()
-            d_true = d_model(X_true)
-            # print(f'D model output shape: {d_true.shape}')
-            d_fake = d_model(X_false.detach())
-            d_x = d_true.mean().item()  # Loss of D(x)
-            d_g_z1 = d_fake.mean().item()
+                # Phase 1: Discriminating: Focusing on updating discriminator
+                ## Generate false samples with a trained generator
+                optimizer_d.zero_grad()
+                d_true = d_model(X_true)
+                # print(f'D model output shape: {d_true.shape}')
+                X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
+                d_fake = d_model(X_false.detach())
+                d_x = d_true.mean().item()  # Loss of D(x)
+                d_g_z1 = d_fake.mean().item()
 
-            if loss_type == 'bce':
-                true_loss = F.binary_cross_entropy(d_true, torch.ones_like(d_true))
-                true_loss.backward()
-                fake_loss = F.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
-                fake_loss.backward()
-                d_loss = true_loss + fake_loss
-                # d_loss.backward()
-            else:
-                d_loss = torch.mean(nn.ReLU(inplace=True)(1.0 - d_true)) + \
-                         torch.mean(nn.ReLU(inplace=True)(1 + d_fake))
-                # if (b + 1) % 2 == 0:
-                d_loss.backward()
-            optimizer_d.step()
+                if loss_type == 'bce':
+                    true_loss = F.binary_cross_entropy(d_true, torch.ones_like(d_true))
+                    # true_loss.backward()
+                    fake_loss = F.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
+                    # fake_loss.backward()
+                    d_loss = (true_loss + fake_loss) * 0.5
+                    d_loss.backward()
+                else:
+                    d_loss = torch.mean(nn.ReLU(inplace=True)(1.0 - d_true)) + \
+                             torch.mean(nn.ReLU(inplace=True)(1 + d_fake))
+                    # if (b + 1) % 2 == 0:
+                    d_loss.backward()
+                optimizer_d.step()
 
-            # Phase 2: Polishing fake examples: Focusing on updating generator
-            # X_false, y_false = generate_false_samples_v2(g_model, device, batch_size * 2, latent_dim)
-            optimizer_g.zero_grad()
-            g_fake = d_model(X_false)
 
-            if loss_type == 'bce':
-                g_loss = F.binary_cross_entropy(g_fake, torch.ones_like(g_fake))
-            else:
-                g_loss = -torch.mean(g_fake)
-            g_loss.backward()
-            optimizer_g.step()
-            d_g_z2 = g_fake.mean().item()
 
-            print(f'Epoch[{epoch}], Batch[{b}] Loss G: {g_loss:.4f}, Loss D: {d_loss:.4f}, D(x): {d_x:.4f}, D(G(z1)): {d_g_z1:.4f}, D(G(z2)): {d_g_z2:.4f}')
+            if step % log_freq == 0:
+                print(f'Epoch[{epoch}], Batch[{b}] Loss G: {g_loss:.4f}, Loss D: {d_loss:.4f}, D(x): {d_x:.4f}, D(G(z1)): {d_g_z1:.4f}, D(G(z2)): {d_g_z2:.4f}')
+
             wandb.log({'G_loss': g_loss,
                        'D_loss': d_loss,
                        'D(x)': d_x,
@@ -225,6 +236,8 @@ def getGANModelInstances(train_configs):
         return DCGANGeneratorNet64(), SNDCGANDiscriminatorNet64()
     elif arch == 'DCGAN256':
         return DCGANGeneratorNet256(), DCGANDiscriminatorNet256()
+    elif arch == 'SNDCGAN256':
+        return DCGANGeneratorNet256(), SNDCGANDiscriminatorNet256()
     elif arch == 'SNGAN':
         return SNGANGeneratorNet(), SNGANDiscriminatorNet()
     elif arch == 'SNGAN128':
@@ -291,7 +304,10 @@ def run() :
 
     # summarize_performance(10, g_model, d_model, None, device, BATCH_SIZE, LATENT_DIM)
     epoch = train_configs['EPOCHS']
-    train_gan(g_model, d_model,  dataloader, device, epochs=epoch, batch_size=train_configs['BATCH_SIZE'], latent_dim=train_configs['LATENT_DIM'], loss_type=train_configs['LOSS_FN'])
+    n_dis = train_configs['N_DIS']
+    n_gen = train_configs['N_GEN']
+    train_gan(g_model, d_model, dataloader, device, epochs=epoch, batch_size=train_configs['BATCH_SIZE'],
+              latent_dim=train_configs['LATENT_DIM'], loss_type=train_configs['LOSS_FN'], n_dis=n_dis, n_gen=n_gen)
     save_model(epoch, g_model, d_model)
 
 

@@ -35,10 +35,6 @@ class GAN(nn.Module):
         return self.gan(x)
 
 
-
-
-
-
 class SimpleDiscriminatorModel(nn.Module):
 
     def __init__(self):
@@ -60,6 +56,7 @@ class SimpleDiscriminatorModel(nn.Module):
     def forward(self, x):
         x = self.cons_layers(x)
         return x
+
 
 class DCGANDiscriminatorNet64(nn.Module):
     '''64 * 64'''
@@ -94,6 +91,7 @@ class DCGANDiscriminatorNet64(nn.Module):
         x = self.cons_layers(x)
         return x
 
+
 class SNDCGANDiscriminatorNet64(nn.Module):
     '''64 * 64'''
 
@@ -125,6 +123,7 @@ class SNDCGANDiscriminatorNet64(nn.Module):
     def forward(self, x):
         x = self.cons_layers(x)
         return x
+
 
 class DCGANGeneratorNet64(nn.Module):
     '''64 * 64'''
@@ -158,6 +157,7 @@ class DCGANGeneratorNet64(nn.Module):
     def forward(self, x):
         x = self.cons_layers(x)
         return x
+
 
 class DCGANDiscriminatorNet(nn.Module):
 
@@ -194,7 +194,6 @@ class DCGANDiscriminatorNet(nn.Module):
     def forward(self, x):
         x = self.cons_layers(x)
         return x
-
 
 
 class DCGANGeneratorNet(nn.Module):
@@ -241,26 +240,26 @@ class SNDCGANDiscriminatorNet(nn.Module):
         super(SNDCGANDiscriminatorNet, self).__init__()
         self.cons_layers = nn.Sequential(
             # input is (nc) x 128 x 128
-            nn.utils.spectral_norm(nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1)),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf) x 64 x 64
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS * 2),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*2) x 32 x 32
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*4) x 16 x 16
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS * 8),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*8) x 8 x 8
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS * 16),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*16) x 4 x 4
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 16, 1, 4, 1, 0, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 16, 1, 4, 1, 0)),
             nn.Sigmoid(),
             # state size: 1 x 1 x 1
             nn.Flatten()
@@ -357,6 +356,49 @@ class DCGANDiscriminatorNet256(nn.Module):
         x = self.cons_layers(x)
         return x
 
+class SNDCGANDiscriminatorNet256(nn.Module):
+
+    def __init__(self):
+        super(SNDCGANDiscriminatorNet256, self).__init__()
+        self.cons_layers = nn.Sequential(
+            # input is (nc) x 256 x 256
+            nn.utils.spectral_norm(nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1)),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            # state size: (ndf) x 128 x 128
+
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            # state size: (ndf) x 64 x 64
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*2) x 32 x 32
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*4) x 16 x 16
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 16),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*8) x 8 x 8
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 16, DIS_FILTERS * 32, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 32),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*16) x 4 x 4
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 32, 1, 4, 1, 1)),
+            # nn.Sigmoid(),
+            # state size: 1 x 1 x 1
+            nn.Flatten()
+            # state size: 1
+        )
+
+    def forward(self, x):
+        x = self.cons_layers(x)
+        return x
+
 class SimpleGeneratorModel(nn.Module):
 
     def __init__(self, dim=LATENT_DIM):
@@ -390,21 +432,20 @@ class SNGANGeneratorNet(nn.Module):
 
     def __init__(self, *args, **kwargs):
         super(SNGANGeneratorNet, self).__init__()
-        af = nn.LeakyReLU
         self.l1 = nn.Linear(LATENT_DIM, (BOTTOM_SIZE ** 2) * GEN_FILTERS * 16)
 
         self.s2 = nn.Unflatten(1, (GEN_FILTERS * 16, BOTTOM_SIZE, BOTTOM_SIZE))  # Reshape to (C, 4, 4)
 
-        self.b3 = SNResBlockUpsample(GEN_FILTERS * 16, GEN_FILTERS * 16, activation=af)
-        self.b4 = SNResBlockUpsample(GEN_FILTERS * 16, GEN_FILTERS * 8, activation=af)
-        self.b5 = SNResBlockUpsample(GEN_FILTERS * 8, GEN_FILTERS * 8, activation=af)
-        self.b6 = SNResBlockUpsample(GEN_FILTERS * 8, GEN_FILTERS * 4, activation=af)
-        self.b7 = SNResBlockUpsample(GEN_FILTERS * 4, GEN_FILTERS * 2, activation=af)
-        self.b8 = SNResBlockUpsample(GEN_FILTERS * 2, GEN_FILTERS, activation=af)
+        self.b3 = SNResBlockUpsample(GEN_FILTERS * 16, GEN_FILTERS * 16)
+        self.b4 = SNResBlockUpsample(GEN_FILTERS * 16, GEN_FILTERS * 8)
+        self.b5 = SNResBlockUpsample(GEN_FILTERS * 8, GEN_FILTERS * 8)
+        self.b6 = SNResBlockUpsample(GEN_FILTERS * 8, GEN_FILTERS * 4)
+        self.b7 = SNResBlockUpsample(GEN_FILTERS * 4, GEN_FILTERS * 2)
+        self.b8 = SNResBlockUpsample(GEN_FILTERS * 2, GEN_FILTERS)
 
         self.bn9 = nn.BatchNorm2d(GEN_FILTERS)
 
-        self.af10 = af(0.2)
+        self.af10 = nn.LeakyReLU(0.2)
 
         self.conv11 = nn.Conv2d(GEN_FILTERS, INPUT_CHN, 3, 1, 1, bias=False)
 
@@ -420,7 +461,7 @@ class SNGANGeneratorNet(nn.Module):
         v = self.bn9(v)
         v = self.af10(v)
         v = self.conv11(v)
-        v = nn.Tanh()(v)
+        v = F.tanh(v)
         return v
 
 
@@ -428,18 +469,18 @@ class SNGANDiscriminatorNet(nn.Module):
 
     def __init__(self, *args, **kwargs):
         super(SNGANDiscriminatorNet, self).__init__()
-        af = nn.LeakyReLU
-        self.b1 = SNResOptimizingBlock(INPUT_CHN, DIS_FILTERS, activation=af)
-        self.b2 = SNResBlockDownsample(DIS_FILTERS, DIS_FILTERS * 2, activation=af)
-        self.b3 = SNResBlockDownsample(DIS_FILTERS * 2, DIS_FILTERS * 4, activation=af)
-        self.b4 = SNResBlockDownsample(DIS_FILTERS * 4, DIS_FILTERS * 8, activation=af)
-        self.b5 = SNResBlockDownsample(DIS_FILTERS * 8, DIS_FILTERS * 8, activation=af)
-        self.b6 = SNResBlockDownsample(DIS_FILTERS * 8, DIS_FILTERS * 16, activation=af)
-        self.b7 = SNResBlockDownsample(DIS_FILTERS * 16, DIS_FILTERS * 16, activation=af)
+        self.b1 = SNResOptimizingBlock(INPUT_CHN, DIS_FILTERS)
+        self.b2 = SNResBlockDownsample(DIS_FILTERS, DIS_FILTERS * 2)
+        self.b3 = SNResBlockDownsample(DIS_FILTERS * 2, DIS_FILTERS * 4)
+        self.b4 = SNResBlockDownsample(DIS_FILTERS * 4, DIS_FILTERS * 8)
+        self.b5 = SNResBlockDownsample(DIS_FILTERS * 8, DIS_FILTERS * 8)
+        self.b6 = SNResBlockDownsample(DIS_FILTERS * 8, DIS_FILTERS * 16)
+        self.b7 = SNResBlockDownsample(DIS_FILTERS * 16, DIS_FILTERS * 16)
 
-        self.af8 = af(0.2)
+        self.af8 = nn.LeakyReLU(0.2)
         l9 = nn.Linear(DIS_FILTERS * 16, 1, bias=False)
         self.l9 = nn.utils.spectral_norm(l9)
+        self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
 
     def forward(self, x):
         v = self.b1(x)
@@ -451,7 +492,8 @@ class SNGANDiscriminatorNet(nn.Module):
         v = self.b7(v)
         v = self.af8(v)
         # Global average pooling
-        v = v.sum(2).sum(2)
+        v = self.global_avg_pool(v)
+        v = v.view(v.size(0), -1)  # Flatten the output
         output = self.l9(v)
         return output
 
