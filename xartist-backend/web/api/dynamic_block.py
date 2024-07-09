@@ -1,5 +1,5 @@
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 import json
 import uuid
 import datetime
@@ -44,9 +44,23 @@ def get_token():
     token_cache[access_token] = access_token_obj
     return jsonify({'data': access_token_obj})
 
+@dynamic_block_api.route('/get_models', methods=['GET'])
+def get_models():
+
+    ml_lists = []
+    # for ml_conf in MLModelsRegistry.models:
+    #     print(ml_conf)
+    #     ml = {}
+        # if
+    ml_lists = [{'model_key': ml, 'model_name': MLModelsRegistry.models[ml]['name']} for ml in MLModelsRegistry.models if  MLModelsRegistry.models[ml]['show_for_public']]
+
+    return jsonify({'data': ml_lists})
+
 @dynamic_block_api.route('/fetch_images', methods=['POST'])
 def fetch_images():
-    mlmodel = MLModelsRegistry.get_model('impressionist_150')
+    data = request.get_json()  # Get JSON data sent with POST request
+    model_key = data.get('model', 'impressionist_150')  # Get the model key or default
+    mlmodel = MLModelsRegistry.get_model(model_key)
     if mlmodel is None:
         return jsonify({'error': 'MLModel not found'}), 404
     logger.info(f'Using model {str(mlmodel)}')
@@ -78,7 +92,7 @@ def gen_images(ml_model):
     generated_images = []
     cost_times = []
 
-    n_sample_points = 50
+    n_sample_points = 20
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
 

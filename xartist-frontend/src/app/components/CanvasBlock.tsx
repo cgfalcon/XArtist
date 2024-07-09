@@ -4,7 +4,7 @@ import {fetchImages} from "@/app/api/route";
 import { Button } from "@material-tailwind/react";
 
 
-function CanvasBlock() {
+function CanvasBlock({ model }) {
 
     const [index, setIndex] = useState(0);
     const [images, setImages] = useState([]);
@@ -15,8 +15,11 @@ function CanvasBlock() {
     useEffect(() => {
         const inter_fetch = async () => {
             try {
-                const img_b64 = await fetchImages();
-                console.log('Fetched images:', img_b64);
+                // if (!model) {
+                //     model = 'impressionist_150'
+                // }
+                const img_b64 = await fetchImages(model);
+                console.log('Fetched images for model:', model);
                 if (Array.isArray(img_b64) && img_b64.length > 0) {
                     setImages(prevImages => {
                         const newImages = [...prevImages, ...img_b64];
@@ -34,7 +37,7 @@ function CanvasBlock() {
         const intervalId = setInterval(inter_fetch, 1000);
 
         return () => clearInterval(intervalId);
-    }, [])
+    }, [model])
 
     // Set looping index
     useEffect(() => {

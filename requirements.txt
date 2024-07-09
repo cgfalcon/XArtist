@@ -5,3 +5,4 @@ keras==2.15
 numpy==1.24.4
 pytorch==2.3.0
 matplotlib==3.7.3
+wandb==0.16.6
