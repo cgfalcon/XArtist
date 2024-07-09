@@ -60,6 +60,7 @@ def save_plot(samples, epoch, n=3):
         plt.imshow(normalized_img)
     # save plot to file
     img_filepath = f"{train_configs['IMG_DUMPING_PATH']}/generated_plot_e{(epoch + 1):03}"
+    print(f'Image is dumped to: {img_filepath}')
     # filename = './generated_plot_e%03d.png' % (epoch + 1)
     plt.savefig(img_filepath)
     plt.close()
@@ -204,6 +205,7 @@ def save_model(epoch, g_model, d_model):
 
     discriminator_dumping_path = f"{train_configs['MODEL_DUMPING_PATH']}/discriminator_model_{(epoch + 1):03}.pt"
     torch.save(d_model.state_dict(), discriminator_dumping_path)
+    print(f'Generator is dumped to: {generator_dumping_path}, \nDiscriminator is dumped to :{discriminator_dumping_path}')
 
 
 def custom_collate_fn(batch):

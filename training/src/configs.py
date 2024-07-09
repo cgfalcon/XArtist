@@ -1,7 +1,7 @@
 
 train_configs = {
   # Dataset Config
-  "DATASET_PATH": "..",
+  "DATASET_PATH": ".",
 
   # Dumping Config
   "MODEL_DUMPING_PATH": ".",
