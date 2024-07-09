@@ -36,6 +36,7 @@ ml_models:
       framework: pytorch
       style: Impressionism
       model_class: DCGANGeneratorNet
+      show_for_public: True
     impressionist_100:
       name: Impressionism
       filename: models/generator_model_impressionist_100.pt
@@ -44,6 +45,16 @@ ml_models:
       framework: pytorch
       style: Impressionism
       model_class: DCGANGeneratorNet
+      show_for_public: False
+    still_lift_300:
+      name: Abstract Still-life
+      filename: models/generator_model_impressionist_100.pt
+      epoch: 300
+      device: mps
+      framework: pytorch
+      style: Still-life
+      model_class: DCGANGeneratorNet
+      show_for_public: True
     artist_201:
       name: Impressionism
       filename: models/generator_model_artist_201.pt
@@ -52,6 +63,7 @@ ml_models:
       framework: pytorch
       style: Impressionism
       model_class: DCGANGeneratorNet
+      show_for_public: False
     abstract_151:
       name: Impressionism
       filename: models/generator_model_128_151.pt
@@ -60,6 +72,7 @@ ml_models:
       framework: pytorch
       style: Abstract
       model_class: DCGANGeneratorNet
+      show_for_public: False
     autocoder:
       name: Impressionism
       filename: models/encoder.pt
@@ -68,3 +81,4 @@ ml_models:
       framework: pytorch
       style: Abstract
       model_class: AE
+      show_for_public: False

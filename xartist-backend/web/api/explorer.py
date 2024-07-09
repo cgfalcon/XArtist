@@ -66,6 +66,7 @@ def generate_from_3dots():
     point_3d = torch.Tensor(np.array(point_3d).reshape(1,3))
 
     point_128d = c_model.model_inst.decode(point_3d)
+    point_128d = point_128d.to(g_model.device)
     output = g_model.model_inst(point_128d)
     img = output[0, :, :, :].detach().cpu().permute(1, 2, 0).numpy()
     normalized_img = (img + 1) / 2 * 255
