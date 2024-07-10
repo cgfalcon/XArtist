@@ -314,14 +314,14 @@ class AE(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(32, 8),
             torch.nn.ReLU(),
-            torch.nn.Linear(8, 3),
+            torch.nn.Linear(8, 2),
             torch.nn.Tanh()
 
         )
 
         self.decoder = torch.nn.Sequential(
 
-            torch.nn.Linear(3, 8),
+            torch.nn.Linear(2, 8),
             torch.nn.ReLU(),
             torch.nn.Linear(8, 32),
             torch.nn.ReLU(),
