@@ -90,7 +90,7 @@ def get_3d_dot(name):
     if resp is None:
         raise ValueError('invalid value format')
 
-    if resp<-1.0 or resp>1.0:
+    if resp<-10.0 or resp>10.0:
         raise ValueError('value out of range')
 
     return resp
