@@ -53,17 +53,17 @@ def generate_from_3dots():
     if g_model is None:
         return jsonify({'error': 'MLModel not found'}), 404
 
-    point_3d = np.zeros((1,3), dtype=np.float32)
+    point_3d = np.zeros((1,2), dtype=np.float32)
     try:
         point_3d[0,0] = get_3d_dot('1st_dot')
         point_3d[0,1] = get_3d_dot('2nd_dot')
-        point_3d[0,2] = get_3d_dot('3rd_dot')
+        #point_3d[0,2] = get_3d_dot('3rd_dot')
     except ValueError:
         return jsonify({'error': 'Invalid value'}), 402
 
-    logger.info(f'Generated 3d points: {point_3d}')
+    logger.info(f'Generated 2d points: {point_3d}')
 
-    point_3d = torch.Tensor(np.array(point_3d).reshape(1,3))
+    point_3d = torch.Tensor(np.array(point_3d).reshape(1,2))
 
     point_128d = c_model.model_inst.decode(point_3d)
     point_128d = point_128d.to(g_model.device)
