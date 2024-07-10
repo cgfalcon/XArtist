@@ -8,6 +8,7 @@ from torch.utils.data import Subset
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 from datetime import datetime
 
 
@@ -121,7 +122,8 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
     adam_beta2 = train_configs['ADAM_BETA2']
     optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(adam_beta1, adam_beta2))
     optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(adam_beta1, adam_beta2))
-    print(device)
+    g_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
+    d_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
 
     img_dumping_freq = int(train_configs['IMAGE_DUMPING_FREQUENCY'])
     model_dumping_freq = int(train_configs['MODEL_DUMPING_FREQUENCY'])
@@ -148,7 +150,7 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
                     g_fake = d_model(X_false)
 
                     if loss_type == 'bce':
-                        g_loss = F.binary_cross_entropy(g_fake, torch.ones_like(g_fake))
+                        g_loss = F.binary_cross_entropy_with_logits(g_fake, torch.ones_like(g_fake))
                     else:
                         g_loss = -torch.mean(F.softplus(g_fake))
                     g_loss.backward()
@@ -166,9 +168,9 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
                 d_g_z1 = d_fake.mean().item()
 
                 if loss_type == 'bce':
-                    true_loss = F.binary_cross_entropy(d_true, torch.ones_like(d_true))
+                    true_loss = F.binary_cross_entropy_with_logits(d_true, torch.ones_like(d_true))
                     # true_loss.backward()
-                    fake_loss = F.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
+                    fake_loss = F.binary_cross_entropy_with_logits(d_fake, torch.zeros_like(d_fake))
                     # fake_loss.backward()
                     d_loss = (true_loss + fake_loss) * 0.5
                     d_loss.backward()
@@ -190,12 +192,18 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
                        'D(G(z1))': d_g_z1,
                        'D(G(z2))': d_g_z2
                        })
+
+        g_scheduler.step()
+        d_scheduler.step()
+
         if (epoch + 1) % img_dumping_freq == 0:
             # Plot performance every 5 epoch
             summarize_performance(epoch, g_model, d_model, None, device, batch_size, latent_dim)
 
         if (epoch + 1) % model_dumping_freq == 0:
             save_model(epoch, g_model, d_model)
+
+
 
 
 def find_device():

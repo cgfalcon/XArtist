@@ -46,6 +46,16 @@ ml_models:
       style: Impressionism
       model_class: DCGANGeneratorNet
       show_for_public: False
+    abstract_strip:
+      name: Abstract Blocks
+      filename: models/generator_model_sngan_genre_100.pt
+      epoch: 100
+      device: mps
+      framework: pytorch
+      style: Abstract
+      model_class: SNGANGeneratorNet
+      show_for_public: True
+      dim: 256
     still_lift_300:
       name: Abstract Still-life
       filename: models/generator_model_impressionist_100.pt

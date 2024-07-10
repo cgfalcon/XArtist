@@ -34,6 +34,7 @@ class MLModel:
         self.framework = model_config['framework']
         self.style = model_config['style']
         self.model_class = model_config['model_class']
+        self.dim = 128 if 'dim' not in model_config else model_config['dim']
         # load model
         self._load_model()
 

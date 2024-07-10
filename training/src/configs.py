@@ -11,16 +11,16 @@ train_configs = {
   "LOG_FREQUENCY": 1,
 
   # Model Config
-  "ARCH": "SNDCGAN256",
+  "ARCH": "SNDCGAN",
   "EPOCHS": 600,
   "BOTTOM_SIZE": 4,
-  "INPUT_DIM": 256,
+  "INPUT_DIM": 128,
   "INPUT_CHN": 3,
   "LATENT_DIM": 128,
-  "BATCH_SIZE": 12,
+  "BATCH_SIZE": 32,
   "GEN_FILTERS": 64,
   "DIS_FILTERS": 64,
-  "CATEGORY_GENRE": "genre",
+  "CATEGORY_GENRE": "style",
   "LABEL_FILTERS": [9],
   "GEN_LR": 0.0002,
   "DIS_LR": 0.0002,
@@ -28,6 +28,6 @@ train_configs = {
   "ADAM_BETA2": 0.999,
   "TORCH_WORKERS": 3,
   "LOSS_FN": "hinge", # 'bce' or 'hinge',
-  "N_DIS": 4,
+  "N_DIS": 1,
   "N_GEN": 1,
 }

@@ -46,7 +46,7 @@ function CanvasBlock({ model }) {
                 console.log('Loaded index:', index);
                 intervalRef.current = setInterval(() => {
                     setIndex((prevIndex) => (prevIndex + 1) % images.length);
-                }, 90); // Change image every 3000 milliseconds (3 seconds)
+                }, 40); // Change image every 3000 milliseconds (3 seconds)
 
 
             }

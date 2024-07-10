@@ -85,14 +85,16 @@ def gen_images(ml_model):
     global gen_flag
     global start_point
     device = ml_model.device
+
+    dim = ml_model.dim
     if gen_flag is True:
-        start_point = torch.randn(1, LATENT_DIM).to(device)
+        start_point = torch.randn(1, dim).to(device)
     # end_point = torch.randn(1, LATENT_DIM).to(device)
     end_point = find_farest_point(start_point, device)
     generated_images = []
     cost_times = []
 
-    n_sample_points = 20
+    n_sample_points = 40
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
 

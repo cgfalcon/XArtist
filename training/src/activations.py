@@ -28,7 +28,7 @@ class AFFactory():
 
 class FReLU(nn.Module):
 
-    def __init__(self, frelu_init = 0.2, inplace = False):
+    def __init__(self, frelu_init = 0.18, inplace = False):
         super(FReLU, self).__init__()
         if frelu_init == 0:
             self.b = nn.Parameter(torch.zeros(1))
