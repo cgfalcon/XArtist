@@ -112,10 +112,10 @@ def gen_images(ml_model):
         g_img = np.ascontiguousarray(normalized_img)
         # Resize to 512 * 512
         # SuperResolution
-        sr_start = time.time()
-        sr_img = sr_model.predict(np.array(g_img))
-        logger.info(f'SuperResolution time: {time.time() - start_ts}')
-        generated_images.append(sr_img)
+        # sr_start = time.time()
+        # sr_img = sr_model.predict(np.array(g_img))
+        # logger.info(f'SuperResolution time: {time.time() - start_ts}')
+        generated_images.append(g_img)
 
         cost_ts = (time.time() - start_ts) * 1000
         logger.info(f'[{idx}]Image generated in {cost_ts} ms')

@@ -38,14 +38,40 @@ const Explore = () => {
     setLoading(false)
   }, []);
 
+  // fetching images
+  // fetching images
+  const convertDotToImg = async (x, y) => {
+    try {
+      const x_f = x * 10
+      const y_f = y * 10
+      const response = await fetch(`http://127.0.0.1:5000/api/explorer/fetch_dots_to_img?1st_dot=${x_f}&2nd_dot=${y_f}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }); // Adjust the API endpoint as necessary
+      if (!response.ok) throw new Error('Failed to fetch');
+      const imgResp = await response.json();
+      console.log("Dots to img: ", imgResp);
+      if (imgResp.data) {
+        setImage(imgResp.data);
+      } else {
+        console.error('No image data found');
+      }
+    } catch (error) {
+      console.error('Error fetching image:', error);
+    }
+  };
+
   return (
     <>
       {loading ? (<div className="flex justify-center items-center w-full">
-        <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
-      </div>): (<div style = {styles.container}>
+      </div>) : (<div style={styles.container}>
       <div style={styles.left}>
         <XYPlot
           data={dots}
@@ -57,6 +83,7 @@ const Explore = () => {
           margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
           onHover={({ x, y }) => {
             console.log(x, y)
+            convertDotToImg(x, y);
           }}
         // onHover={({ x, y }) => {
 

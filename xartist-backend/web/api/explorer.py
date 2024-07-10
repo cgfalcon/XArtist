@@ -15,7 +15,9 @@ import base64
 import numpy as np
 from PIL import Image
 import io
+from ISR.models import RDN, RRDN
 
+sr_model = RRDN(weights='gans')
 
 explorer_api = Blueprint('explorer', __name__, url_prefix='/api/explorer')
 
@@ -46,7 +48,6 @@ def generate_from_3dots():
     c_model = MLModelsRegistry.get_model('autocoder')
     g_model = MLModelsRegistry.get_model('impressionist_150')
 
-
     if c_model is None:
         return jsonify({'error': 'MLModel not found'}), 404
 
@@ -73,6 +74,11 @@ def generate_from_3dots():
     normalized_img = normalized_img.astype(np.uint8)
 
     logger.info('1 image generated from 3d points')
+
+    # SR
+    # sr_ts = time.time()
+    # sr_img = sr_model.predict(normalized_img)
+    # logger.info(f'SR time: {time.time() - sr_ts}')
 
     ## Encode to base64
     images_base64 = convert_to_jpg(normalized_img)
