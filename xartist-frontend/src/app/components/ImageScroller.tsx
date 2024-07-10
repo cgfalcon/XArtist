@@ -8,7 +8,7 @@ const ImageScroller = () => {
     const models = [
         { model_key: 'impressionist_150', model_name: 'Impressionism' },
         { model_key: 'still_lift_300', model_name: 'Abstract Still-life' },
-        { model_key: 'abstract_strip', model_name: 'Abstract Blocks' }
+        { model_key: 'still_lift_300', model_name: 'Abstract Blocks' }
     ];
 
     useEffect(() => {
@@ -40,18 +40,20 @@ const ImageScroller = () => {
     };
 
     return (
-        <div className="relative flex items-center justify-between w-full overflow-hidden">
+        <>
+         <div className="relative flex items-center w-full">
             <button onClick={() => handleArrowClick('left')} className="text-2xl absolute left-0 z-10 text-white">&lt;</button>
-            <div className="flex space-x-4 w-full object-cover">
+            <div className="relative flex space-x-4 w-full object-cover">
                 {displayedModels.map((model, index) => (
-                    <div key={model.model_key} className="flex flex-col items-center w-512 h-512">
+                    <div key={model.model_key} className="w-[600] inline-block">
                         <CanvasBlock model={model.model_key} playing={index === 1}/>
                         <p>{model.model_name}</p>
                     </div>
                 ))}
             </div>
             <button onClick={() => handleArrowClick('right')} className="text-2xl absolute right-0 z-10 text-white">&gt;</button>
-        </div>
+         </div>
+        </>
     );
 };
 

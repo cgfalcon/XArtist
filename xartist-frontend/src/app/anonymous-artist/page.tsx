@@ -10,7 +10,7 @@ interface Props {
 const AnonymousArtist = () => {
   // console.log(categories);
   return (
-      <div className="container mx-auto">
+      <div className="">
           <ArtistCanvas/>
           {/* Add more sections as needed */}
       </div>

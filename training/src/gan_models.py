@@ -425,6 +425,7 @@ class SimpleGeneratorModel(nn.Module):
 
 
 class SNGANGeneratorNet(nn.Module):
+    """256 * 256"""
 
     def __init__(self, *args, **kwargs):
         super(SNGANGeneratorNet, self).__init__()
@@ -462,6 +463,7 @@ class SNGANGeneratorNet(nn.Module):
 
 
 class SNGANDiscriminatorNet(nn.Module):
+    """256 * 256"""
 
     def __init__(self, *args, **kwargs):
         super(SNGANDiscriminatorNet, self).__init__()

@@ -13,6 +13,7 @@ import base64
 import numpy as np
 from PIL import Image
 import io
+from ISR.models import RDN, RRDN
 
 
 dynamic_block_api = Blueprint('dynamic_block', __name__, url_prefix='/api/dynamic_block')
@@ -25,6 +26,7 @@ token_cache = {}
 gen_flag = True
 start_point = None
 
+sr_model = RRDN(weights='gans')
 
 # Concurrent Control
 max_token_limit = 5
@@ -107,7 +109,14 @@ def gen_images(ml_model):
         normalized_img = (img + 1) / 2 * 255
         normalized_img = normalized_img.astype(np.uint8)
 
-        generated_images.append(np.ascontiguousarray(normalized_img))
+        g_img = np.ascontiguousarray(normalized_img)
+        # Resize to 512 * 512
+        # SuperResolution
+        sr_start = time.time()
+        sr_img = sr_model.predict(np.array(g_img))
+        logger.info(f'SuperResolution time: {time.time() - start_ts}')
+        generated_images.append(sr_img)
+
         cost_ts = (time.time() - start_ts) * 1000
         logger.info(f'[{idx}]Image generated in {cost_ts} ms')
 

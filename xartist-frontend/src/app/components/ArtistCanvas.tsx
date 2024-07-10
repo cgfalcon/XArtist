@@ -37,28 +37,11 @@ const [models, setModels] = useState([]);
         setSelectedModel(event.target.value);
     };
 
-    const renderCanvas = () => {
-        if (canvasLayout === "Single") {
-            return (
-                <ImageScroller/>
-            );
-        } else {
-            return (
-                <div className="grid grid-cols-4 gap-2 center">
-                    {Array(8).fill(0).map((_, idx) => (
-                        <CanvasBlock key={idx} model={selectedModel}/>
-                    ))}
-                </div>
-            );
-        }
-    };
-
     return (
-        <div>
+        <>
             {/* Dropdown for selecting model */}
-
-            {renderCanvas()}
-        </div>
+            <ImageScroller/>
+        </>
     );
 
 
