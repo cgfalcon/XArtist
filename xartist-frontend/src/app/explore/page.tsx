@@ -4,7 +4,7 @@ import Navbar from "../components/NavBar";
 import React from "react";
 import { Slider } from "@material-tailwind/react";
 
-import { Component } from "react";  // for Latent Space Explorer
+import { Component, useEffect, useState } from "react";  // for Latent Space Explorer
 import ImageCanvas from "../components/ImageCanvas";  // for Latent Space Explorer
 import XYPlot from "../components/XYPlot";  // for Latent Space Explorer
 import * as tf from "@tensorflow/tfjs";  // for Latent Space Explorer
@@ -18,74 +18,172 @@ const MODEL_PATH = "models/generatorjs/model.json";
 interface Props {
 }
 
-class Explore extends Component<{}, { model, digitImg, mu, sigma:any}> {
-  constructor(props) {
-    super(props);
-    this.getImage = this.getImage.bind(this);
+const Explore = () => {
+  const [dots, setDots] = useState([]);
+  const [image, setImage] = useState(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-    //this.norm = gaussian(0, 1);
+  useEffect(() => {
+    // Generate 10,000 random dots
+    const generatedDots = [];
+    for (let i = 0; i < 3000; i++) {
+      generatedDots.push({
+        x: Math.random(),
+        y: Math.random(),
+      });
+    }
+    setDots(generatedDots);
+    console.log(generatedDots);
+    setLoading(false)
+  }, []);
 
-    this.state = {
-      model: null,
-      digitImg: tf.zeros([28, 28]),
-      mu: 0,
-      sigma: 0
-    };
-  }
+  return (
+    <>
+      {loading ? (<div className="flex justify-center items-center w-full">
+        <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+      </div>): (<div style = {styles.container}>
+      <div style={styles.left}>
+        <XYPlot
+          data={dots}
+          width={500 - 10 - 10}
+          height={500 - 20 - 10}
+          xAccessor={d => d.x}
+          yAccessor={d => d.y}
+          // colorAccessor={d => d[2]}
+          margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
+          onHover={({ x, y }) => {
+            console.log(x, y)
+          }}
+        // onHover={({ x, y }) => {
 
-  componentDidMount() {
-    tf
-      .loadLayersModel(MODEL_PATH)
-      .then(model => this.setState({ model }))
-      .then(() => this.getImage())
-      .then(digitImg => this.setState({ digitImg }));
-  }
-
-  async getImage() {
-    const { model, mu, sigma } = this.state;
-    const zSample = tf.tensor([[mu, sigma]]);
-    return model
-      .predict(zSample)
-      .mul(tf.scalar(255.0))
-      .reshape([28, 28]);
-  }
-
-  render() {
-    return this.state.model === null ? (
-      <div>Loading, please wait</div>
-    ) : (
-      <div className="App">
-        <h1>Latent Space Explorer</h1>
-        <div className="ImageDisplay">
-          <ImageCanvas
-            width={500}
-            height={500}
-            imageData={this.state.digitImg}
-          />
-        </div>
-
-        <div className="ChartDisplay">
-          <XYPlot
-            data={encodedData}
-            width={500 - 10 - 10}
-            height={500 - 20 - 10}
-            xAccessor={d => d[0]}
-            yAccessor={d => d[1]}
-            colorAccessor={d => d[2]}
-            margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
-            onHover={({ x, y }) => {
-              this.setState({ sigma: y, mu: x });
-              this.getImage().then(digitImg => this.setState({ digitImg }));
-            }}
-          />
-        </div>
+        //   // this.setState({ sigma: y, mu: x });
+        //   // this.getImage().then(digitImg => this.setState({ digitImg }));
+        //   }}
+        />
+        {/* {isHovering && <div style={styles.hoverText}>Hovering</div>} */}
       </div>
-    );
-  }
-}
+      <div style={styles.right}>
+        <img
+          src={`data:image/png;base64,${image}`}
+          alt="Art Animation"
+          style={{ width: '500px', height: '500px' }}
+          className="object-cover object-center w-full h-256 max-w-full"
+        // onMouseEnter={() => setIsPlaying(false)}
+        // onMouseLeave={() => setIsPlaying(true)}
+        />
+        {/* <ImageCanvas /> */}
+      </div>
+    </div >)}
+    </>
+    
+  );
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    height: '100vh',
+  },
+  left: {
+    width: '50%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  right: {
+    width: '50%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+};
+
+// class Explore extends Component<{}, { model, digitImg, mu, sigma:any}> {
+//   constructor(props) {
+//     super(props);
+//     this.getImage = this.getImage.bind(this);
+
+//     //this.norm = gaussian(0, 1);
+
+//     this.state = {
+//       model: null,
+//       digitImg: tf.zeros([28, 28]),
+//       mu: 0,
+//       sigma: 0
+//     };
+//   }
+
+//   // userEffect() -> {
+//   //   data = fetchAllDataPoints()
+//   //   XYPlot(data)
+//   // }
+
+//   componentDidMount() {
+//     tf
+//       .loadLayersModel(MODEL_PATH)
+//       .then(model => this.setState({ model }))
+//       .then(() => this.getImage())
+//       .then(digitImg => this.setState({ digitImg }));
+//   }
+
+//   async getImage() {
+//     const { model, mu, sigma } = this.state;
+//     // fetch images 
+//     // image_base64 = fetchImageWithDots(sigma, mu)
+//     // setImage(image_base64)
+//   }
+
+//   render() {
+//     return this.state.model === null ? (
+//       <div>Loading, please wait</div>
+//     ) : (
+//       <div className="App">
+//         <h1>Latent Space Explorer</h1>
+//         <div className="ImageDisplay">
+//           <ImageCanvas
+//             width={500}
+//             height={500}
+//             imageData={this.state.digitImg}
+//           />
+//         </div>
+
+//         <div className="ChartDisplay">
+//           <XYPlot
+//             data={encodedData}
+//             width={500 - 10 - 10}
+//             height={500 - 20 - 10}
+//             xAccessor={d => d[0]}
+//             yAccessor={d => d[1]}
+//             colorAccessor={d => d[2]}
+//             margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
+//             onHover={({ x, y }) => {
+//               console.log(x,y )
+//               //img = fetchImagesWithDot(x, y)
+//               //setImage(img)
+//               //this.setState({ sigma: y, mu: x });
+//               //this.getImage().then(digitImg => this.setState({ digitImg }));
+//             }}
+//           />
+//         </div>
+//       </div>
+//     );
+//   }
+// }
 
 export default Explore;
 
+
+// Working Static V_1
 // const Explore = () => {
 //   // console.log(categories);
 //   return (

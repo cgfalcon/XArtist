@@ -22,6 +22,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/gaussian": "^1.2.2",
     "@types/node": "^20",
     "@types/react": "^18",
