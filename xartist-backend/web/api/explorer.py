@@ -30,14 +30,14 @@ def show_3dots():
         return jsonify({'error': 'MLModel not found'}), 404
     logger.info(f'Using model {str(mlmodel)}')
 
-    dots = (torch.rand(10000, 128)-0.5)*2
+    dots = (torch.rand(3000, 128)-0.5)*2
 
 
     dots_3d = mlmodel.model_inst.encode(dots).detach().numpy()
 
     ## Encode to base64
 
-    logger.info(f'Generated 3d dots: {np.shape(dots_3d)}')
+    logger.info(f'Generated 2d dots: {np.shape(dots_3d)}')
 
     return jsonify({'data': dots_3d.tolist()})
 
