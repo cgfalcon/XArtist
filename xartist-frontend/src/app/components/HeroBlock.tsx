@@ -2,13 +2,19 @@ import React, {useEffect, useState} from "react";
 
 import {fetchImages} from "@/app/api/route";
 
-function CanvasBlock() {
+function HeroBlock() {
 
     const tmp_images = [
-        '/wikiart_abstract_animation160.gif',
-        '/wikiart_impressionist_animation50.gif',
+        // '/wikiart_resnet_60.gif',
+        '/wikiart_resnet_150.gif',
+        '/wikiart_sndcgan_stilllife_300.gif',
+        '/wikiart_sngan_genra_150.gif',
+        '/wikiart_frelu_impressionism_050.gif',
+        '/wikiart_frelu_impressionism_100.gif',
         '/wikiart_impressionist_animation100.gif',
-        '/wikiart_artist_animation.gif'
+        '/wikiart_impressionist_animation50.gif',
+        '/wikiart_abstract_animation160.gif',
+        '/wikiart_artist_animation.gif',
     ]; // Replace paths with your image paths or URLs
 
     const [index, setIndex] = useState(0);
@@ -46,4 +52,4 @@ function CanvasBlock() {
 }
 
 
-export default CanvasBlock;
+export default HeroBlock;

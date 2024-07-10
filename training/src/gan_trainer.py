@@ -8,11 +8,14 @@ from torch.utils.data import Subset
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from datetime import datetime
 
-from PIL import Image
 
-from .datasets import WikiArtDataset
-from .gan_models import *
+import wandb
+
+from src.datasets import WikiArtDataset
+from src.configs import train_configs
+from src.gan_models import *
 
 
 def generate_latent_point(n_samples, latent_dim):
@@ -56,8 +59,10 @@ def save_plot(samples, epoch, n=3):
         # print(img.shape)
         plt.imshow(normalized_img)
     # save plot to file
-    filename = './generated_plot_e%03d.png' % (epoch + 1)
-    plt.savefig(filename)
+    img_filepath = f"{train_configs['IMG_DUMPING_PATH']}/generated_plot_e{(epoch + 1):03}"
+    print(f'Image is dumped to: {img_filepath}')
+    # filename = './generated_plot_e%03d.png' % (epoch + 1)
+    plt.savefig(img_filepath)
     plt.close()
 
 def summarize_performance(epoch, g_model, d_model, test_loader, device, batch_size, latent_dim=100):
@@ -111,59 +116,86 @@ def generator_loss(output_fake):
 
 
 
-def train_gan(g_model, d_model, gan_model, train_loader, device, epochs=100, batch_size=500, latent_dim=100):
-    optimizer_g = torch.optim.Adam(g_model.parameters(), lr=GEN_LR, betas=(0.5, 0.999))
-    optimizer_d = torch.optim.Adam(d_model.parameters(), lr=DIS_LR, betas=(0.5, 0.999))
+def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500, latent_dim=100, loss_type='bce', n_dis=1, n_gen=1):
+    adam_beta1 = train_configs['ADAM_BETA1']
+    adam_beta2 = train_configs['ADAM_BETA2']
+    optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(adam_beta1, adam_beta2))
+    optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(adam_beta1, adam_beta2))
     print(device)
+
+    img_dumping_freq = int(train_configs['IMAGE_DUMPING_FREQUENCY'])
+    model_dumping_freq = int(train_configs['MODEL_DUMPING_FREQUENCY'])
+    log_freq = int(train_configs['LOG_FREQUENCY'])
+    step = 0
+
     for epoch in range(epochs):
         for b, batch_dataset in enumerate(train_loader):
             X_true, _ = batch_dataset
             X_true = X_true.to(device)
 
+            step += 1
+
             y_true = torch.ones((batch_size, 1), dtype=torch.float)
             y_true = y_true.to(device)
 
-            # Phase 1: Discriminating: Focusing on updating discriminator
-            ## Generate false samples with a trained generator
+            for i in range(n_dis):
+                if i == 0:
+                    # Update Generator
+                    # Phase 2: Polishing fake examples: Focusing on updating generator
+                    # X_false, y_false = generate_false_samples_v2(g_model, device, batch_size * 2, latent_dim)
+                    X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
+                    optimizer_g.zero_grad()
+                    g_fake = d_model(X_false)
 
-            X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
+                    if loss_type == 'bce':
+                        g_loss = F.binary_cross_entropy(g_fake, torch.ones_like(g_fake))
+                    else:
+                        g_loss = -torch.mean(F.softplus(g_fake))
+                    g_loss.backward()
+                    optimizer_g.step()
+                    d_g_z2 = g_fake.mean().item()
 
-            # print(f'\tY shape, true: {y_true.shape}, false: {y_false.shape}')
-            optimizer_d.zero_grad()
-            d_true = d_model(X_true)
-            # print(f'D model output shape: {d_true.shape}')
+                # Phase 1: Discriminating: Focusing on updating discriminator
+                ## Generate false samples with a trained generator
+                optimizer_d.zero_grad()
+                d_true = d_model(X_true)
+                # print(f'D model output shape: {d_true.shape}')
+                X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
+                d_fake = d_model(X_false.detach())
+                d_x = d_true.mean().item()  # Loss of D(x)
+                d_g_z1 = d_fake.mean().item()
 
-            true_loss = F.binary_cross_entropy(d_true, torch.ones_like(d_true))
-            true_loss.backward()
-            d_x = d_true.mean().item() # Loss of D(x)
+                if loss_type == 'bce':
+                    true_loss = F.binary_cross_entropy(d_true, torch.ones_like(d_true))
+                    # true_loss.backward()
+                    fake_loss = F.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
+                    # fake_loss.backward()
+                    d_loss = (true_loss + fake_loss) * 0.5
+                    d_loss.backward()
+                else:
+                    d_loss = torch.mean(nn.ReLU(inplace=True)(1.0 - d_true)) + \
+                             torch.mean(nn.ReLU(inplace=True)(1 + d_fake))
+                    # if (b + 1) % 2 == 0:
+                    d_loss.backward()
+                optimizer_d.step()
 
-            d_fake = d_model(X_false.detach())
-            fake_loss = F.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
-            fake_loss.backward()
-            d_g_z1 = d_fake.mean().item()
 
-            d_loss = true_loss + fake_loss
-            # if (b + 1) % 2 == 0:
-            # d_loss.backward()
-            optimizer_d.step()
 
-            # Phase 2: Polishing fake examples: Focusing on updating generator
-            # X_false, y_false = generate_false_samples_v2(g_model, device, batch_size * 2, latent_dim)
-            optimizer_g.zero_grad()
-            g_fake = d_model(X_false)
-            g_loss = F.binary_cross_entropy(g_fake, torch.ones_like(g_fake))
-            g_loss.backward()
-            d_g_z2 = g_fake.mean().item()
-            optimizer_g.step()
+            if step % log_freq == 0:
+                print(f'Epoch[{epoch}], Batch[{b}] Loss G: {g_loss:.4f}, Loss D: {d_loss:.4f}, D(x): {d_x:.4f}, D(G(z1)): {d_g_z1:.4f}, D(G(z2)): {d_g_z2:.4f}')
 
-            print(f'Epoch[{epoch}], Batch[{b}] Loss G: {g_loss:.4f}, Loss D: {d_loss:.4f}, D(x): {d_x:.4f}, D(G(z1)): {d_g_z1:.4f}, D(G(z2)): {d_g_z2:.4f}')
-
-        if (epoch + 1) % 2 == 0:
+            wandb.log({'G_loss': g_loss,
+                       'D_loss': d_loss,
+                       'D(x)': d_x,
+                       'D(G(z1))': d_g_z1,
+                       'D(G(z2))': d_g_z2
+                       })
+        if (epoch + 1) % img_dumping_freq == 0:
             # Plot performance every 5 epoch
             summarize_performance(epoch, g_model, d_model, None, device, batch_size, latent_dim)
 
-        if (epoch + 1) % 50 == 0:
-            save_model(epoch, g_model)
+        if (epoch + 1) % model_dumping_freq == 0:
+            save_model(epoch, g_model, d_model)
 
 
 def find_device():
@@ -177,10 +209,15 @@ def find_device():
         device = torch.device("cpu")  # Fallback to CPU
     return device
 
-def save_model(epoch, g_model):
+def save_model(epoch, g_model, d_model):
+    generator_dumping_path = f"{train_configs['MODEL_DUMPING_PATH']}/generator_model_{(epoch + 1):03}.pt"
     # save the generator model tile file
-    filename = './generator_model_%03d.pt' % (epoch + 1)
-    torch.save(g_model.state_dict(), filename)
+    torch.save(g_model.state_dict(), generator_dumping_path)
+
+    discriminator_dumping_path = f"{train_configs['MODEL_DUMPING_PATH']}/discriminator_model_{(epoch + 1):03}.pt"
+    torch.save(d_model.state_dict(), discriminator_dumping_path)
+    print(f'Generator is dumped to: {generator_dumping_path}, \nDiscriminator is dumped to :{discriminator_dumping_path}')
+
 
 def custom_collate_fn(batch):
     batch = list(filter(None, batch))  # Remove None items
@@ -188,42 +225,89 @@ def custom_collate_fn(batch):
         return torch.tensor([]), torch.tensor([])  # Return empty tensors if batch is empty
     return torch.utils.data.dataloader.default_collate(batch)
 
+
+def getGANModelInstances(train_configs):
+    arch = train_configs['ARCH']
+    if arch == 'DCGAN':
+        return DCGANGeneratorNet(), DCGANDiscriminatorNet()
+    elif arch == 'SNDCGAN':
+        return DCGANGeneratorNet(), SNDCGANDiscriminatorNet()
+    elif arch =='SNDCGAN64':
+        return DCGANGeneratorNet64(), SNDCGANDiscriminatorNet64()
+    elif arch == 'DCGAN256':
+        return DCGANGeneratorNet256(), DCGANDiscriminatorNet256()
+    elif arch == 'SNDCGAN256':
+        return DCGANGeneratorNet256(), SNDCGANDiscriminatorNet256()
+    elif arch == 'SNGAN':
+        return SNGANGeneratorNet(), SNGANDiscriminatorNet()
+    elif arch == 'SNGAN128':
+        return SNGANGeneratorNet128(), SNGANDiscriminatorNet128()
+    elif arch == 'ResGAN':
+        return ResGANGeneratorNet(), ResGANDiscriminatorNet()
+    elif arch == 'ResGAN128':
+        return ResGANGeneratorNet128(), ResGANDiscriminatorNet128()
+    else:
+        raise ValueError(f"Unknow architectures {arch}")
+
+
 def run() :
     device = find_device()
 
     img_transforms = transforms.Compose([
         transforms.ToPILImage(),
-        transforms.Resize((INPUT_DIM, INPUT_DIM)),
+        transforms.Resize((train_configs['INPUT_DIM'], train_configs['INPUT_DIM'])),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
-    genra_dataset = WikiArtDataset(root_dir='../wikiart/', category=CATEGORY_GENRE, transform=img_transforms,
-                                   label_filters=LABEL_FILTERS)
-    dataloader = DataLoader(genra_dataset, batch_size=BATCH_SIZE,
-                            shuffle=True, num_workers=TORCH_WORKERS, collate_fn=custom_collate_fn)
 
-    d_model = DCGANDiscriminatorNet()
-    d_model.to(device)
-    d_model.apply(weights_init)
+    wikiart_path = f"{train_configs['DATASET_PATH']}/wikiart/"
+    genra_dataset = WikiArtDataset(root_dir=wikiart_path, category=train_configs['CATEGORY_GENRE'], transform=img_transforms,
+                                   label_filters=train_configs['LABEL_FILTERS'])
+    dataloader = DataLoader(genra_dataset, batch_size=train_configs['BATCH_SIZE'],
+                            shuffle=True, num_workers=train_configs['TORCH_WORKERS'], collate_fn=custom_collate_fn)
 
-    g_model = DCGANGeneratorNet()
-    g_model.to(device)
-    g_model.apply(weights_init)
+    use_trained_model = False
+    # use_model = None
+    if use_trained_model:
+        g_model_path = 'modes/generator_model_resnet_151.pt'
+        g_model = SNGANGeneratorNet()  # Ensure the class is defined or imported
+        g_model.load_state_dict(torch.load(g_model_path))
+        g_model.to(device)
+        g_model.eval()
+    else:
+        g_model, d_model = getGANModelInstances(train_configs)
+        print(f'G-Model: \n{g_model}')
+        print(f'D-Model: \n{d_model}')
+        # d_model = SNGANDiscriminatorNet()
+        d_model.to(device)
+        d_model.apply(weights_init)
 
-    gan_model = GAN(g_model, d_model)
-    gan_model.to(device)
+        # g_model = SNGANGeneratorNet()
+        g_model.to(device)
+        g_model.apply(weights_init)
+
+
+    # == Login wandb to enable data collection ==
+    expr_key = datetime.now().strftime('%Y%m%d%H%M')
+    arch = train_configs['ARCH']
+    expr_name = f"{arch}-{train_configs['CATEGORY_GENRE']}-{expr_key}"
+    wandb.login()
+    wandb.init(
+        # Set the project where this run will be logged
+        project="XArtist",
+        # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
+        name=expr_name,
+        # Track hyperparameters and run metadata
+        config={**train_configs})
+    # ===Wandb init finished===
+
 
     # summarize_performance(10, g_model, d_model, None, device, BATCH_SIZE, LATENT_DIM)
-    epoch = EPOCHS
-    train_gan(g_model, d_model, gan_model, dataloader, device, epochs=epoch, batch_size=BATCH_SIZE, latent_dim=LATENT_DIM)
-    save_model(epoch, g_model)
+    epoch = train_configs['EPOCHS']
+    n_dis = train_configs['N_DIS']
+    n_gen = train_configs['N_GEN']
+    train_gan(g_model, d_model, dataloader, device, epochs=epoch, batch_size=train_configs['BATCH_SIZE'],
+              latent_dim=train_configs['LATENT_DIM'], loss_type=train_configs['LOSS_FN'], n_dis=n_dis, n_gen=n_gen)
+    save_model(epoch, g_model, d_model)
 
 
-if __name__ == '__main__':
-    Image.MAX_IMAGE_PIXELS = None  # Completely removes the limit
-    # or set to a higher limit, for example:
-    Image.MAX_IMAGE_PIXELS = 100_000_000  # set to a more suitable limit
-    start_ts = time.time()
-    print(f'Training started ....')
-    run()
-    print(f'Training finished ... ({(time.time() - start_ts)/1000} s)')
