@@ -6,7 +6,8 @@ function HeroBlock() {
 
     const tmp_images = [
         // '/wikiart_resnet_60.gif',
-        '/wikiart_resnet_150.gif',
+        // '/wikiart_resnet_150.gif',
+        '/wikiart_sndcgan_expressionism_300.gif',
         '/wikiart_sndcgan_stilllife_300.gif',
         '/wikiart_sngan_genra_150.gif',
         '/wikiart_frelu_impressionism_050.gif',

@@ -122,8 +122,8 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
     adam_beta2 = train_configs['ADAM_BETA2']
     optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(adam_beta1, adam_beta2))
     optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(adam_beta1, adam_beta2))
-    g_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
-    d_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
+    # g_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
+    # d_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
 
     img_dumping_freq = int(train_configs['IMAGE_DUMPING_FREQUENCY'])
     model_dumping_freq = int(train_configs['MODEL_DUMPING_FREQUENCY'])
@@ -137,50 +137,40 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
 
             step += 1
 
-            y_true = torch.ones((batch_size, 1), dtype=torch.float)
-            y_true = y_true.to(device)
-
-            for i in range(n_dis):
-                if i == 0:
-                    # Update Generator
-                    # Phase 2: Polishing fake examples: Focusing on updating generator
-                    # X_false, y_false = generate_false_samples_v2(g_model, device, batch_size * 2, latent_dim)
-                    X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
-                    optimizer_g.zero_grad()
-                    g_fake = d_model(X_false)
-
-                    if loss_type == 'bce':
-                        g_loss = F.binary_cross_entropy_with_logits(g_fake, torch.ones_like(g_fake))
-                    else:
-                        g_loss = -torch.mean(F.softplus(g_fake))
-                    g_loss.backward()
-                    optimizer_g.step()
-                    d_g_z2 = g_fake.mean().item()
-
-                # Phase 1: Discriminating: Focusing on updating discriminator
-                ## Generate false samples with a trained generator
+            for _ in range(n_dis):
+                # Update Discriminator
                 optimizer_d.zero_grad()
+                X_false, _ = generate_false_samples(g_model, device, batch_size, latent_dim)
                 d_true = d_model(X_true)
-                # print(f'D model output shape: {d_true.shape}')
-                X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
                 d_fake = d_model(X_false.detach())
-                d_x = d_true.mean().item()  # Loss of D(x)
+                d_x = d_true.mean().item()
                 d_g_z1 = d_fake.mean().item()
 
                 if loss_type == 'bce':
                     true_loss = F.binary_cross_entropy_with_logits(d_true, torch.ones_like(d_true))
-                    # true_loss.backward()
                     fake_loss = F.binary_cross_entropy_with_logits(d_fake, torch.zeros_like(d_fake))
-                    # fake_loss.backward()
                     d_loss = (true_loss + fake_loss) * 0.5
-                    d_loss.backward()
                 else:
-                    d_loss = torch.mean(nn.ReLU(inplace=True)(1.0 - d_true)) + \
-                             torch.mean(nn.ReLU(inplace=True)(1 + d_fake))
-                    # if (b + 1) % 2 == 0:
-                    d_loss.backward()
+                    d_loss = torch.mean(nn.ReLU(inplace=True)(1.0 - d_true)) + torch.mean(
+                        nn.ReLU(inplace=True)(1 + d_fake))
+
+                d_loss.backward()
                 optimizer_d.step()
 
+            for _ in range(n_gen):
+                # Update Generator
+                optimizer_g.zero_grad()
+                X_false, _ = generate_false_samples(g_model, device, batch_size, latent_dim)
+                g_fake = d_model(X_false)
+
+                if loss_type == 'bce':
+                    g_loss = F.binary_cross_entropy_with_logits(g_fake, torch.ones_like(g_fake))
+                else:
+                    g_loss = -torch.mean(F.softplus(g_fake))
+
+                g_loss.backward()
+                optimizer_g.step()
+                d_g_z2 = g_fake.mean().item()
 
 
             if step % log_freq == 0:
@@ -193,8 +183,8 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
                        'D(G(z2))': d_g_z2
                        })
 
-        g_scheduler.step()
-        d_scheduler.step()
+        # g_scheduler.step()
+        # d_scheduler.step()
 
         if (epoch + 1) % img_dumping_freq == 0:
             # Plot performance every 5 epoch
@@ -212,6 +202,9 @@ def find_device():
     if torch.backends.mps.is_available():
         print("MPS is available on this device.")
         device = torch.device("mps")  # Use MPS device
+    elif torch.cuda.is_available():
+        print("CUDA is available on this device.")
+        device = torch.device("cuda")  # Use MPS device
     else:
         print("MPS not available, using CPU instead.")
         device = torch.device("cpu")  # Fallback to CPU

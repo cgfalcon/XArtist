@@ -3,7 +3,7 @@ from src.activations import *
 
 class SNResBlockUpsample(nn.Module):
 
-    def __init__(self, in_channels, out_channels, activation = FReLU, hidden_channels = None, upsample=True):
+    def __init__(self, in_channels, out_channels, activation = nn.ReLU, hidden_channels = None, upsample=True):
         super(SNResBlockUpsample, self).__init__()
         self.upsample = upsample
         self.learnable_sc = in_channels != out_channels or upsample
@@ -43,7 +43,7 @@ class SNResBlockUpsample(nn.Module):
 
 class SNResBlockDownsample(nn.Module):
 
-    def __init__(self, in_channels, out_channels, activation = FReLU, hidden_channels = None, kernel_size = 3, padding = 1, downsample=True):
+    def __init__(self, in_channels, out_channels, activation = nn.ReLU, hidden_channels = None, kernel_size = 3, padding = 1, downsample=True):
         super(SNResBlockDownsample, self).__init__()
         self.af1 = activation()
         self.af2 = activation()
@@ -90,7 +90,7 @@ def _downsample(x):
 
 class SNResOptimizingBlock(nn.Module):
 
-    def __init__(self, in_channels, out_channels, activation = FReLU, kernel_size = 3, padding = 1):
+    def __init__(self, in_channels, out_channels, activation = nn.ReLU, kernel_size = 3, padding = 1):
         super(SNResOptimizingBlock, self).__init__()
         self.af = activation()
         self.sp_conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding)
@@ -199,7 +199,7 @@ class ResBlockDownsample(nn.Module):
 
 class ResOptimizingBlock(nn.Module):
 
-    def __init__(self, in_channels, out_channels, activation = nn.LeakyReLU, kernel_size = 3, padding = 1):
+    def __init__(self, in_channels, out_channels, activation = nn.ReLU, kernel_size = 3, padding = 1):
         super(ResOptimizingBlock, self).__init__()
         self.af = activation()
         self.sp_conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding)

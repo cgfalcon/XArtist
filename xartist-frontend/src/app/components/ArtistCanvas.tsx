@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import CanvasBlock from "@/app/components/CanvasBlock";
+import ImageScroller from "@/app/components/ImageScroller";
 
 function ArtistCanvas() {
 const [models, setModels] = useState([]);
@@ -39,15 +40,7 @@ const [models, setModels] = useState([]);
     const renderCanvas = () => {
         if (canvasLayout === "Single") {
             return (
-                <div className="grid place-items-center h-screen p-0">
-                    <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}>
-                        {models.map((model, index) => (
-                            <option key={model.model_key} value={model.model_key}>{model.model_name}</option>
-                        ))}
-                    </select>
-                    <CanvasBlock model={selectedModel}/>
-
-                </div>
+                <ImageScroller/>
             );
         } else {
             return (

@@ -441,7 +441,7 @@ class SNGANGeneratorNet(nn.Module):
 
         self.bn9 = nn.BatchNorm2d(GEN_FILTERS)
 
-        self.af10 = FReLU(0.2)
+        self.af10 = nn.ReLU(inplace=True)
 
         self.conv11 = nn.Conv2d(GEN_FILTERS, INPUT_CHN, 3, 1, 1, bias=False)
 
@@ -473,7 +473,7 @@ class SNGANDiscriminatorNet(nn.Module):
         self.b6 = SNResBlockDownsample(DIS_FILTERS * 8, DIS_FILTERS * 16)
         self.b7 = SNResBlockDownsample(DIS_FILTERS * 16, DIS_FILTERS * 16, downsample=False)
 
-        self.af8 = FReLU(0.2)
+        self.af8 = nn.ReLU(0.2)
         l9 = nn.Linear(DIS_FILTERS * 16, 1, bias=False)
         self.l9 = nn.utils.spectral_norm(l9)
         self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
