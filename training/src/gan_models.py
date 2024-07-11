@@ -64,23 +64,23 @@ class DCGANDiscriminatorNet64(nn.Module):
     def __init__(self):
         super(DCGANDiscriminatorNet64, self).__init__()
         self.cons_layers = nn.Sequential(
-            nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1, bias=False),
+            nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*2) x 32 x 32
-            nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 2),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*4) x 16 x 16
-            nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*8) x 8 x 8
-            nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 8, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 8, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 8),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*16) x 4 x 4
-            nn.Conv2d(DIS_FILTERS * 8, 1, 1, 1, 0, bias=False),
+            nn.Conv2d(DIS_FILTERS * 8, 1, 1, 1, 0),
             nn.Flatten(),
             # state size: 1 x 1 x 1
             # state size: 1
@@ -97,23 +97,23 @@ class SNDCGANDiscriminatorNet64(nn.Module):
     def __init__(self):
         super(SNDCGANDiscriminatorNet64, self).__init__()
         self.cons_layers = nn.Sequential(
-            nn.utils.spectral_norm(nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*2) x 32 x 32
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS * 2),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*4) x 16 x 16
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*8) x 8 x 8
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 8, 2, 1, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 8, 2, 1)),
             # nn.BatchNorm2d(DIS_FILTERS * 8),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*16) x 4 x 4
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 8, 1, 1, 1, 0, bias=False)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 8, 1, 1, 1, 0)),
             nn.Flatten(),
             # state size: 1 x 1 x 1
             # state size: 1
@@ -132,23 +132,23 @@ class DCGANGeneratorNet64(nn.Module):
         self.cons_layers = nn.Sequential(
             nn.Unflatten(1, (LATENT_DIM, 1, 1)),  # Corrected dimension ordering
 
-            nn.ConvTranspose2d(LATENT_DIM, GEN_FILTERS * 8, 4, 1, 0, bias=False),
+            nn.ConvTranspose2d(LATENT_DIM, GEN_FILTERS * 8, 4, 1, 0),
             nn.BatchNorm2d(GEN_FILTERS * 8),
             nn.ReLU(True),
             # state size: (ngf*16) x 4 x 4
-            nn.ConvTranspose2d(GEN_FILTERS * 8, GEN_FILTERS * 4, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 8, GEN_FILTERS * 4, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 4),
             nn.ReLU(True),
             # state size: (ngf*8) x 8 x 8
-            nn.ConvTranspose2d(GEN_FILTERS * 4, GEN_FILTERS * 2, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 4, GEN_FILTERS * 2, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 2),
             nn.ReLU(True),
             # state size: (ngf*4) x 16 x 16
-            nn.ConvTranspose2d(GEN_FILTERS * 2, GEN_FILTERS, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 2, GEN_FILTERS, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS),
             nn.ReLU(True),
             # state size: (ngf*2) x 32 x 32
-            nn.ConvTranspose2d(GEN_FILTERS, INPUT_CHN, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS, INPUT_CHN, 4, 2, 1),
             # state size: (ngf) x 64 x 64
             nn.Tanh(),
         )
@@ -164,26 +164,26 @@ class DCGANDiscriminatorNet(nn.Module):
         super(DCGANDiscriminatorNet, self).__init__()
         self.cons_layers = nn.Sequential(
             # input is (nc) x 128 x 128
-            nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1, bias=False),
+            nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf) x 64 x 64
-            nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 2),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*2) x 32 x 32
-            nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*4) x 16 x 16
-            nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 8),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*8) x 8 x 8
-            nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 16),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*16) x 4 x 4
-            nn.Conv2d(DIS_FILTERS * 16, 1, 4, 1, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 16, 1, 4, 1, 1),
             # state size: 1 x 1 x 1
             nn.Flatten()
             # state size: 1
@@ -201,27 +201,27 @@ class DCGANGeneratorNet(nn.Module):
         self.cons_layers = nn.Sequential(
             nn.Unflatten(1, (LATENT_DIM, 1, 1)),  # Corrected dimension ordering
 
-            nn.ConvTranspose2d(LATENT_DIM, GEN_FILTERS * 16, 4, 1, 0, bias=False),
+            nn.ConvTranspose2d(LATENT_DIM, GEN_FILTERS * 16, 4, 1, 0),
             nn.BatchNorm2d(GEN_FILTERS * 16),
             FReLU(inplace=True),
             # state size: (ngf*16) x 4 x 4
-            nn.ConvTranspose2d(GEN_FILTERS * 16, GEN_FILTERS * 8, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 16, GEN_FILTERS * 8, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 8),
             FReLU(inplace=True),
             # state size: (ngf*8) x 8 x 8
-            nn.ConvTranspose2d(GEN_FILTERS * 8, GEN_FILTERS * 4, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 8, GEN_FILTERS * 4, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 4),
             FReLU(inplace=True),
             # state size: (ngf*4) x 16 x 16
-            nn.ConvTranspose2d(GEN_FILTERS * 4, GEN_FILTERS * 2, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 4, GEN_FILTERS * 2, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 2),
             FReLU(inplace=True),
             # state size: (ngf*2) x 32 x 32
-            nn.ConvTranspose2d(GEN_FILTERS * 2, GEN_FILTERS, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 2, GEN_FILTERS, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS),
             FReLU(inplace=True),
             # state size: (ngf) x 64 x 64
-            nn.ConvTranspose2d(GEN_FILTERS, INPUT_CHN, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS, INPUT_CHN, 4, 2, 1),
             nn.Tanh()
             # state size: (nc) x 128 x 128
         )
@@ -276,32 +276,32 @@ class DCGANGeneratorNet256(nn.Module):
         self.cons_layers = nn.Sequential(
             nn.Unflatten(1, (LATENT_DIM, 1, 1)),  # Corrected dimension ordering
 
-            nn.ConvTranspose2d(LATENT_DIM, GEN_FILTERS * 32, 4, 1, 0, bias=False),
+            nn.ConvTranspose2d(LATENT_DIM, GEN_FILTERS * 32, 4, 1, 0),
             nn.BatchNorm2d(GEN_FILTERS * 32),
             FReLU(0.2, inplace=True),
             # state size: (ngf*16) x 4 x 4
-            nn.ConvTranspose2d(GEN_FILTERS * 32, GEN_FILTERS * 16, 4, 1, 0, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 32, GEN_FILTERS * 16, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 16),
             FReLU(0.2, inplace=True),
             # state size: (ngf*8) x 8 x 8
-            nn.ConvTranspose2d(GEN_FILTERS * 16, GEN_FILTERS * 8, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 16, GEN_FILTERS * 8, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 8),
             FReLU(0.2, inplace=True),
             # state size: (ngf*4) x 16 x 16
-            nn.ConvTranspose2d(GEN_FILTERS * 8, GEN_FILTERS * 4, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 8, GEN_FILTERS * 4, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 4),
             FReLU(0.2, inplace=True),
             # state size: (ngf*2) x 32 x 32
-            nn.ConvTranspose2d(GEN_FILTERS * 4, GEN_FILTERS * 2, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 4, GEN_FILTERS * 2, 4, 2, 1),
             nn.BatchNorm2d(GEN_FILTERS * 2),
             FReLU(0.2, inplace=True),
             # state size: (ngf*2) x 64 x 64
-            nn.ConvTranspose2d(GEN_FILTERS * 2, GEN_FILTERS, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS * 2, GEN_FILTERS, 4, 2, 1),
             # nn.BatchNorm2d(INPUT_CHN),
             nn.BatchNorm2d(GEN_FILTERS),
             FReLU(0.2, inplace=True),
             # state size: (ngf) x 128 x 128
-            nn.ConvTranspose2d(GEN_FILTERS, INPUT_CHN, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(GEN_FILTERS, INPUT_CHN, 4, 2, 1),
             nn.Tanh()
             # state size: (nc) x 256 x 256
         )
@@ -316,33 +316,33 @@ class DCGANDiscriminatorNet256(nn.Module):
         super(DCGANDiscriminatorNet256, self).__init__()
         self.cons_layers = nn.Sequential(
             # input is (nc) x 256 x 256
-            nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1, bias=False),
+            nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1),
             nn.LeakyReLU(0.2, inplace=True),
 
             # state size: (ndf) x 128 x 128
 
-            nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
             # state size: (ndf) x 64 x 64
-            nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*2) x 32 x 32
-            nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 8),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*4) x 16 x 16
-            nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 16),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*8) x 8 x 8
-            nn.Conv2d(DIS_FILTERS * 16, DIS_FILTERS * 32, 4, 2, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 16, DIS_FILTERS * 32, 4, 2, 1),
             nn.BatchNorm2d(DIS_FILTERS * 32),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*16) x 4 x 4
-            nn.Conv2d(DIS_FILTERS * 32, 1, 4, 1, 1, bias=False),
+            nn.Conv2d(DIS_FILTERS * 32, 1, 4, 1, 0),
             # state size: 1 x 1 x 1
             nn.Flatten()
             # state size: 1
@@ -384,7 +384,7 @@ class SNDCGANDiscriminatorNet256(nn.Module):
             # nn.BatchNorm2d(DIS_FILTERS * 32),
             nn.LeakyReLU(0.2, inplace=True),
             # state size: (ndf*16) x 4 x 4
-            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 32, 1, 4, 1, 1)),
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 32, 1, 4, 1, 0)),
             # nn.Sigmoid(),
             # state size: 1 x 1 x 1
             nn.Flatten()
@@ -442,9 +442,9 @@ class SNGANGeneratorNet(nn.Module):
 
         self.bn9 = nn.BatchNorm2d(GEN_FILTERS)
 
-        self.af10 = nn.ReLU(inplace=True)
+        self.af10 = FReLU(0.2)
 
-        self.conv11 = nn.Conv2d(GEN_FILTERS, INPUT_CHN, 3, 1, 1, bias=False)
+        self.conv11 = nn.Conv2d(GEN_FILTERS, INPUT_CHN, 3, 1, 1)
 
     def forward(self, x):
         v = self.l1(x)
@@ -475,8 +475,8 @@ class SNGANDiscriminatorNet(nn.Module):
         self.b6 = SNResBlockDownsample(DIS_FILTERS * 8, DIS_FILTERS * 16)
         self.b7 = SNResBlockDownsample(DIS_FILTERS * 16, DIS_FILTERS * 16, downsample=False)
 
-        self.af8 = nn.ReLU(0.2)
-        l9 = nn.Linear(DIS_FILTERS * 16, 1, bias=False)
+        self.af8 = FReLU(0.2)
+        l9 = nn.Linear(DIS_FILTERS * 16, 1)
         self.l9 = nn.utils.spectral_norm(l9)
         self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
 
@@ -543,7 +543,7 @@ class SNGANDiscriminatorNet128(nn.Module):
 
         self.af7 = FReLU(0.2)
         self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
-        l8 = nn.Linear(DIS_FILTERS * 16, 1, bias=False)
+        l8 = nn.Linear(DIS_FILTERS * 16, 1)
         self.l8 = nn.utils.spectral_norm(l8)
 
     def forward(self, x):
@@ -613,7 +613,7 @@ class ResGANDiscriminatorNet(nn.Module):
         self.b7 = ResBlockDownsample(DIS_FILTERS * 16, DIS_FILTERS * 16, activation=af)
 
         self.af8 = af(0.2)
-        self.l9 = nn.Linear(DIS_FILTERS * 16, 1, bias=False)
+        self.l9 = nn.Linear(DIS_FILTERS * 16, 1)
 
     def forward(self, x):
         v = self.b1(x)
@@ -648,7 +648,7 @@ class ResGANGeneratorNet128(nn.Module):
 
         self.af9 = af(0.2)
 
-        self.conv10 = nn.Conv2d(GEN_FILTERS * 2, INPUT_CHN, 3, 1, 1, bias=False)
+        self.conv10 = nn.Conv2d(GEN_FILTERS * 2, INPUT_CHN, 3, 1, 1)
 
     def forward(self, x):
         v = self.l1(x)
@@ -679,7 +679,7 @@ class ResGANDiscriminatorNet128(nn.Module):
 
         self.af7 = af(0.2)
         self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.l8 = nn.Linear(DIS_FILTERS * 16, 1, bias=False)
+        self.l8 = nn.Linear(DIS_FILTERS * 16, 1)
 
     def forward(self, x):
         v = self.b1(x)
