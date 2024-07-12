@@ -24,8 +24,12 @@ const Explore = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // *** Buffer state to handle debouncing ***
-  const hoverTimeoutRef = useRef(null);
+  // *** Storage array and timer reference for scheduled processing ***
+  const coordinatesRef = useRef([]);
+  const timerRef = useRef(null);
+  
+  // // *** Buffer state to handle debouncing ***
+  // const hoverTimeoutRef = useRef(null);
 
   useEffect(() => {
     // Generate 3,000 random dots
@@ -65,16 +69,35 @@ const Explore = () => {
     }
   };
 
-  // *** Debounced hover handler ***
+  // *** Scheduled Timer Function ***
+  useEffect(() => {
+    const processCoordinates = () => {
+      if (coordinatesRef.current.length > 0) {
+        const { x, y } = coordinatesRef.current.shift();
+        convertDotToImg(x, y);
+      }
+    };
+
+    timerRef.current = setInterval(processCoordinates, 5000); // Process every 0.5 seconds
+
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  // *** Hover handler to store coordinates ***
   const handleHover = ({ x, y }) => {
-    console.log(x, y);
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    hoverTimeoutRef.current = setTimeout(() => {
-      convertDotToImg(x, y);
-    }, 3000); // 3 seconds delay
+    coordinatesRef.current.push({ x, y });
   };
+
+  // // *** Debounced hover handler ***
+  // const handleHover = ({ x, y }) => {
+  //   console.log(x, y);
+  //   if (hoverTimeoutRef.current) {
+  //     clearTimeout(hoverTimeoutRef.current);
+  //   }
+  //   hoverTimeoutRef.current = setTimeout(() => {
+  //     convertDotToImg(x, y);
+  //   }, 3000); // 3 seconds delay
+  // };
 
   return (
     <>
