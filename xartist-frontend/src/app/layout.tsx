@@ -22,7 +22,7 @@ export default function RootLayout({
         <Head>
             <title>The Anonymous Artist</title>
         </Head>
-        <body className={`${inter.className} body-container`}>
+        <body className={`${inter.className} body-container  bg-gray-900 text-white`}>
         <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
             aria-hidden="true"
