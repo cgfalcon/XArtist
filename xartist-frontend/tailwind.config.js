@@ -13,6 +13,11 @@ module.exports = withMT({
       fontFamily: {
         body: "Poppins, sans-serif",
       },
+      colors: {
+        'cool-gray': {
+          900: '#f3f3f3',
+        },
+      },
     },
   },
   plugins: [],

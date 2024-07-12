@@ -7,15 +7,18 @@ function HeroBlock() {
     const tmp_images = [
         // '/wikiart_resnet_60.gif',
         // '/wikiart_resnet_150.gif',
-        '/wikiart_sndcgan_expressionism_300.gif',
-        '/wikiart_sndcgan_stilllife_300.gif',
+        '/wikiart_sndcgan256_bce_impressionism_1_600.gif',
+        '/wikiart_sndcgan256_hinge_impressionism_4_600.gif',
+        '/wikiart_sndcgan256_bce_impressionism_2_600.gif',
+        '/wikiart_sndcgan256_impressionism_1_600.gif',
+        '/wikiart_sndcgan256_impressionism_2_600.gif',
         '/wikiart_sngan_genra_150.gif',
         '/wikiart_frelu_impressionism_050.gif',
         '/wikiart_frelu_impressionism_100.gif',
         '/wikiart_impressionist_animation100.gif',
         '/wikiart_impressionist_animation50.gif',
         '/wikiart_abstract_animation160.gif',
-        '/wikiart_artist_animation.gif',
+        'wikiart_sndcgan256_hinge_impressionism_3_600.gif'
     ]; // Replace paths with your image paths or URLs
 
     const [index, setIndex] = useState(0);
@@ -40,14 +43,25 @@ function HeroBlock() {
     }
 
     return (
-        <div className="">
-            {tmp_images.length > 0 && (
-                <img
-                    src={tmp_images[index]}
-                    style={{width: '100%', height: '100vh'}}
-                    className="object-cover object-center w-full h-full max-w-full"
-                />
-            )}
+        // <div className="">
+        //     {tmp_images.length > 0 && (
+        //         <img
+        //             src={tmp_images[index]}
+        //             style={{width: '100%', height: '100vh'}}
+        //             className="object-cover object-center w-full h-full max-w-full"
+        //         />
+        //     )}
+        // </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {tmp_images.map((image, index) => (
+                <div key={index} className="bg-black overflow-hidden">
+                    <img
+                        src={image}
+                        alt={`Image ${index + 1}`}
+                        className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
+                    />
+                </div>
+            ))}
         </div>
     )
 }

@@ -63,7 +63,7 @@ class MLModel:
         model_path = os.path.join(current_directory, '..', self.model_filename)
 
         # Load model
-        self.model_inst.load_state_dict(torch.load(model_path))
+        self.model_inst.load_state_dict(torch.load(model_path, map_location=device))
         self.model_inst.to(device)
         self.model_inst.eval()  # S
         print(f'Model {self.model_config_name} loaded')
