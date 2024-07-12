@@ -147,9 +147,13 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
                 d_g_z1 = d_fake.mean().item()
 
                 if loss_type == 'bce':
-                    true_loss = F.binary_cross_entropy_with_logits(d_true, torch.ones_like(d_true))
-                    fake_loss = F.binary_cross_entropy_with_logits(d_fake, torch.zeros_like(d_fake))
-                    d_loss = (true_loss + fake_loss) * 0.5
+                    # Use Noised labels
+                    labels_like_one = torch.rand_like(d_true) * 0.05 + 0.95
+                    labels_like_zero = torch.rand_like(d_fake) * 0.05
+                    true_loss = F.binary_cross_entropy_with_logits(d_true, labels_like_one)
+                    fake_loss = F.binary_cross_entropy_with_logits(d_fake, labels_like_zero)
+
+                    d_loss = true_loss + fake_loss
                 else:
                     d_loss = torch.mean(nn.ReLU(inplace=True)(1.0 - d_true)) + torch.mean(
                         nn.ReLU(inplace=True)(1 + d_fake))
@@ -164,7 +168,9 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
                 g_fake = d_model(X_false)
 
                 if loss_type == 'bce':
-                    g_loss = F.binary_cross_entropy_with_logits(g_fake, torch.ones_like(g_fake))
+                    # Use Noised labels
+                    labels_like_one = torch.rand_like(g_fake) * 0.05 + 0.95
+                    g_loss = F.binary_cross_entropy_with_logits(g_fake, labels_like_one)
                 else:
                     g_loss = -torch.mean(F.softplus(g_fake))
 

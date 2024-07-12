@@ -10,12 +10,12 @@ class SNResBlockUpsample(nn.Module):
         hidden_channels = out_channels if hidden_channels is None else hidden_channels
         self.bn1 = nn.BatchNorm2d(in_channels)
         self.af1 = activation()
-        self.conv1 = nn.ConvTranspose2d(in_channels=in_channels, out_channels=hidden_channels, kernel_size=4, stride=2, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=hidden_channels, kernel_size=3, padding=1)
         self.bn2 = nn.BatchNorm2d(hidden_channels)
         self.af2 = activation()
         self.conv2 = nn.Conv2d(in_channels=hidden_channels, out_channels=out_channels, kernel_size=3, padding=1)
         if self.learnable_sc:
-            self.c_sc = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=4, stride=2, padding=1)
+            self.c_sc = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0)
 
     def upsample_conv(self, x, conv):
         return conv(nn.UpsamplingNearest2d(scale_factor=2)(x))
@@ -24,7 +24,7 @@ class SNResBlockUpsample(nn.Module):
         v = x
         v = self.bn1(v)
         v = self.af1(v)
-        v = self.conv1(v) if self.upsample else self.conv1(v)
+        v = self.upsample_conv(v, self.conv1) if self.upsample else self.conv1(v)
         v = self.bn2(v)
         v = self.af2(v)
         v = self.conv2(v)
@@ -32,7 +32,7 @@ class SNResBlockUpsample(nn.Module):
 
     def shortcut(self, x):
         if self.learnable_sc:
-            x = self.c_sc(x) if self.upsample else self.c_sc(x)
+            x = self.upsample_conv(x, self.c_sc) if self.upsample else self.c_sc(x)
             return x
         else:
             return x
