@@ -6,8 +6,8 @@ const ImageScroller = () => {
     const [displayedModels, setDisplayedModels] = useState([]);
 
     const models = [
-        { model_key: 'impressionist_150', model_name: 'Impressionism' },
-        { model_key: 'still_lift_300', model_name: 'Abstract Still-life' },
+        { model_key: 'gan256_bce_impressionism_600', model_name: 'Impressionism' },
+        { model_key: 'gan256_hinge_impressionism_600', model_name: 'Abstract Still-life' },
         { model_key: 'still_lift_300', model_name: 'Abstract Blocks' }
     ];
 

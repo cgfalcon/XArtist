@@ -20,7 +20,7 @@ dynamic_block_api = Blueprint('dynamic_block', __name__, url_prefix='/api/dynami
 
 logger = xartist_logging.app_logger
 
-token_cache = {}
+
 
 # A flag wither to create start_point
 gen_flag = True
@@ -28,23 +28,6 @@ start_point = None
 
 sr_model = RRDN(weights='gans')
 
-# Concurrent Control
-max_token_limit = 5
-
-@dynamic_block_api.route('/get_token', methods=['GET'])
-def get_token():
-    if len(token_cache) >= max_token_limit:
-        logger.info('Max token limit reached')
-        return jsonify({'error': 'Max token limit reached. Please try again later.'}), 407
-
-
-    access_token = uuid.uuid4()
-    access_token_obj = {
-        'access_token': str(access_token),
-        'timestamp': time.time(),
-    }
-    token_cache[access_token] = access_token_obj
-    return jsonify({'data': access_token_obj})
 
 @dynamic_block_api.route('/get_models', methods=['GET'])
 def get_models():

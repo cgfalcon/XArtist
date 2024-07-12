@@ -7,27 +7,35 @@ train_configs = {
   "MODEL_DUMPING_PATH": ".",
   "IMG_DUMPING_PATH": ".",
   "IMAGE_DUMPING_FREQUENCY": 1,
-  "MODEL_DUMPING_FREQUENCY": 30,
+  "MODEL_DUMPING_FREQUENCY": lambda epoch: 2 if epoch < 600 else 10, # Dumping model every 30 epochs if current epoch less than 600
   "LOG_FREQUENCY": 1,
+  "IMAGE_SAMPLE_WITH_FIXED_POINTS": True, # Wither to use fixed points to generated checkpoint images
+
+  # Training Resume Configs
+  "CTN_CONTINUE_TRAINING": True,
+  "CTN_CONTINUE_TRAINING_EPOCH": 300, # The epoch No. start from
+  "CTN_GENERATOR_PATH": "./generator_model_300.pt",
+  "CTN_DISCRIMINATOR_PATH": "./discriminator_model_300.pt",
+  # "CTN_OPTIMIZER_PATH": "",
 
   # Model Config
-  "ARCH": "SNGAN128",
-  "EPOCHS": 6000,
+  "ARCH": "SNDCGAN256",
+  "EPOCHS": 60000,
   "BOTTOM_SIZE": 4,
   "INPUT_DIM": 256,
   "INPUT_CHN": 3,
   "LATENT_DIM": 128,
-  "BATCH_SIZE": 10,
+  "BATCH_SIZE": 256,
   "GEN_FILTERS": 128,
   "DIS_FILTERS": 64,
   "CATEGORY_GENRE": "style",
-  "LABEL_FILTERS": [9],
+  "LABEL_FILTERS": [9, 10, 12],
   "GEN_LR": 0.0001,
-  "DIS_LR": 0.0003,
-  "ADAM_BETA1": 0.0,
+  "DIS_LR": 0.00005,
+  "ADAM_BETA1": 0.5,
   "ADAM_BETA2": 0.999,
-  "TORCH_WORKERS": 10,
-  "LOSS_FN": "bce", # 'bce' or 'hinge',
+  "TORCH_WORKERS": 12,
+  "LOSS_FN": "hinge", # 'bce' or 'hinge',
   "N_DIS": 1,
   "N_GEN": 1,
 }
