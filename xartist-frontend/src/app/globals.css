@@ -33,3 +33,7 @@
 .body-container {
   padding-top: 70px;
 }
+
+body {
+  @apply bg-gray-900 text-white;
+}

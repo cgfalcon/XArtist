@@ -28,67 +28,85 @@ logger:
     filename: flask.log
 
 ml_models:
-    impressionist_150:
-      name: Impressionism
-      filename: models/generator_model_impressionist_150.pt
-      epoch: 150
-      device: mps
-      framework: pytorch
-      style: Impressionism
-      model_class: DCGANGeneratorNet
-      show_for_public: True
-    impressionist_100:
-      name: Impressionism
-      filename: models/generator_model_impressionist_100.pt
-      epoch: 100
-      device: mps
-      framework: pytorch
-      style: Impressionism
-      model_class: DCGANGeneratorNet
-      show_for_public: False
-    abstract_strip:
-      name: Abstract Blocks
-      filename: models/generator_model_sngan_genre_100.pt
-      epoch: 100
-      device: mps
-      framework: pytorch
-      style: Abstract
-      model_class: SNGANGeneratorNet
-      show_for_public: True
-      dim: 256
-    still_lift_300:
-      name: Abstract Still-life
-      filename: models/generator_model_impressionist_100.pt
-      epoch: 300
-      device: mps
-      framework: pytorch
-      style: Still-life
-      model_class: DCGANGeneratorNet
-      show_for_public: True
-    artist_201:
-      name: Impressionism
-      filename: models/generator_model_artist_201.pt
-      epoch: 100
-      device: mps
-      framework: pytorch
-      style: Impressionism
-      model_class: DCGANGeneratorNet
-      show_for_public: False
-    abstract_151:
-      name: Impressionism
-      filename: models/generator_model_128_151.pt
-      epoch: 100
-      device: mps
-      framework: pytorch
-      style: Abstract
-      model_class: DCGANGeneratorNet
-      show_for_public: False
-    autocoder:
-      name: Impressionism
-      filename: models/encoder.pt
-      epoch: 0
-      device: cpu
-      framework: pytorch
-      style: Abstract
-      model_class: AE
-      show_for_public: False
+  gan256_bce_impressionism_600:
+    name: Impressionism
+    filename: models/generator_model_sndcgan256_bce_600.pt
+    epoch: 600
+    device: mps
+    framework: pytorch
+    style: Impressionism
+    model_class: DCGANGeneratorNet256
+    show_for_public: True
+  gan256_hinge_impressionism_600:
+    name: Impressionism
+    filename: models/generator_model_sndcgan256_hinge_600.pt
+    epoch: 600
+    device: mps
+    framework: pytorch
+    style: Impressionism
+    model_class: DCGANGeneratorNet256
+    show_for_public: True
+  impressionist_150:
+    name: Impressionism
+    filename: models/generator_model_impressionist_150.pt
+    epoch: 150
+    device: mps
+    framework: pytorch
+    style: Impressionism
+    model_class: DCGANGeneratorNet
+    show_for_public: True
+  impressionist_100:
+    name: Impressionism
+    filename: models/generator_model_impressionist_100.pt
+    epoch: 100
+    device: mps
+    framework: pytorch
+    style: Impressionism
+    model_class: DCGANGeneratorNet
+    show_for_public: False
+  abstract_strip:
+    name: Abstract Blocks
+    filename: models/generator_model_sngan_genre_100.pt
+    epoch: 100
+    device: mps
+    framework: pytorch
+    style: Abstract
+    model_class: SNGANGeneratorNet
+    show_for_public: True
+    dim: 256
+  still_lift_300:
+    name: Abstract Still-life
+    filename: models/generator_model_impressionist_100.pt
+    epoch: 300
+    device: mps
+    framework: pytorch
+    style: Still-life
+    model_class: DCGANGeneratorNet
+    show_for_public: True
+  artist_201:
+    name: Impressionism
+    filename: models/generator_model_artist_201.pt
+    epoch: 100
+    device: mps
+    framework: pytorch
+    style: Impressionism
+    model_class: DCGANGeneratorNet
+    show_for_public: False
+  abstract_151:
+    name: Impressionism
+    filename: models/generator_model_128_151.pt
+    epoch: 100
+    device: mps
+    framework: pytorch
+    style: Abstract
+    model_class: DCGANGeneratorNet
+    show_for_public: False
+  autocoder:
+    name: Impressionism
+    filename: models/encoder.pt
+    epoch: 0
+    device: cpu
+    framework: pytorch
+    style: Abstract
+    model_class: AE
+    show_for_public: False
