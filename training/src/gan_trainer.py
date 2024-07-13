@@ -14,7 +14,7 @@ from datetime import datetime
 
 import wandb
 
-from src.datasets import WikiArtDataset
+from src.datasets import WikiArtDataset, corrupted_images
 from src.configs import train_configs
 from src.gan_models import *
 from src.utils import fixed_latent_points
@@ -202,6 +202,9 @@ def train_gan(g_model, d_model, train_loader, device, optimizer_g, optimizer_d, 
 
         # g_scheduler.step()
         # d_scheduler.step()
+
+        if epoch == 0:
+            print(f'Corrupted image: {corrupted_images}')
 
         if (epoch + 1) % img_dumping_freq == 0:
             # Plot performance every 5 epoch

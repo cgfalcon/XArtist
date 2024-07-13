@@ -7,6 +7,8 @@ from skimage import io, transform
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 
+corrupted_images = {}
+
 class WikiArtDataset(Dataset):
 
     def __init__(self, root_dir, category, transform=None, size=None, label_filters=None):
@@ -51,7 +53,9 @@ class WikiArtDataset(Dataset):
         try:
             image = io.imread(img_name)
         except IOError:
-            print(f"Warning: Skipping corrupted image {img_name}")
+            if idx not in corrupted_images:
+                print(f"Warning: Skipping corrupted image {img_name}")
+                corrupted_images[idx] = img_name
             return None  # or use a default image
 
         if self.transform:
