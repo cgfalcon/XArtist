@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import { useError } from "../context/ErrorContext";
 
 export const dynamic = 'force-dynamic' // defaults to auto
 export async function fetchImages(modelKey) {

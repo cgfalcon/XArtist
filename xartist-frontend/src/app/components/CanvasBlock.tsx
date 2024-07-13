@@ -2,6 +2,7 @@ import React, {useEffect, useState, useRef} from "react";
 
 import {fetchImages} from "@/app/api/route";
 import { Button } from "@material-tailwind/react";
+import { useError } from "../context/ErrorContext";
 
 
 function CanvasBlock({ model, playing }) {
@@ -11,6 +12,7 @@ function CanvasBlock({ model, playing }) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [loading, setLoading] = useState(true);
     const intervalRef = useRef(null);
+    const { showError } = useError();
 
     // fetching images
     useEffect(() => {
@@ -22,17 +24,19 @@ function CanvasBlock({ model, playing }) {
                     setImages(img_b64);
                 } else {
                     console.error('Failed to fetch images: response is not an array');
+                    showError('Fetched images failed');
                 }
                 setLoading(false); // Set loading to false after fetching images
             } catch (error) {
                 console.error('Failed to fetch images:', error);
+                showError(error.response?.data?.error_msg || 'Failed to fetch images');
                 setLoading(false); // Set loading to false even if there's an error
             }
         };
 
         fetchInitialImages();
 
-    }, [model]);
+    }, [model, showError]);
 
     // fetching images continously
     useEffect(() => {
@@ -52,18 +56,20 @@ function CanvasBlock({ model, playing }) {
                         });
                     } else {
                         console.error('Failed to fetch images: response is not an array');
+                        showError('Failed to fetch images');
                     }
                 }
 
             } catch (error) {
                 console.error('Failed to fetch images:', error);
+                showError(error.response?.data?.error_msg || 'Failed to fetch images');
             }
         };
 
         const intervalId = setInterval(inter_fetch, 1000);
 
         return () => clearInterval(intervalId);
-    }, [model])
+    }, [model, isPlaying, showError])
 
     // Set looping index
     useEffect(() => {

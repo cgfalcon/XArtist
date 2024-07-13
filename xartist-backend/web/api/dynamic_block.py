@@ -1,13 +1,10 @@
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 import json
 import uuid
 import datetime
 import time
 
-import utils.logging as xartist_logging
-from utils.ml_models_registry import MLModelsRegistry
-from utils.constants import *
 import torch
 import base64
 import numpy as np
@@ -15,21 +12,20 @@ from PIL import Image
 import io
 from ISR.models import RDN, RRDN
 
+import utils.logging as xartist_logging
+from utils.ml_models_registry import MLModelsRegistry
+from utils.constants import *
+from web.api.authorization import *
 
 dynamic_block_api = Blueprint('dynamic_block', __name__, url_prefix='/api/dynamic_block')
 
 logger = xartist_logging.app_logger
 
-
-
-# A flag wither to create start_point
-gen_flag = True
-start_point = None
-
 sr_model = RRDN(weights='gans')
 
 
 @dynamic_block_api.route('/get_models', methods=['GET'])
+@token_required
 def get_models():
 
     ml_lists = []
@@ -42,6 +38,7 @@ def get_models():
     return jsonify({'data': ml_lists})
 
 @dynamic_block_api.route('/fetch_images', methods=['POST'])
+@token_required
 def fetch_images():
     data = request.get_json()  # Get JSON data sent with POST request
     model_key = data.get('model', 'impressionist_150')  # Get the model key or default
@@ -54,7 +51,6 @@ def fetch_images():
 
     ## Encode to base64
     images_base64 = [convert_to_jpg(img) for img in images]
-    logger.info(f'Generated images: {images_base64}')
 
     return jsonify({'data': images_base64})
 
@@ -67,19 +63,21 @@ def convert_to_jpg(img):
 
 
 def gen_images(ml_model):
-    global gen_flag
-    global start_point
+    asession = g.asession
     device = ml_model.device
 
-    dim = ml_model.dim
-    if gen_flag is True:
-        start_point = torch.randn(1, dim).to(device)
-    # end_point = torch.randn(1, LATENT_DIM).to(device)
-    end_point = find_farest_point(start_point, device)
-    generated_images = []
-    cost_times = []
+    session_model_context = asession.get_value(ml_model.model_config_name, {})
+    start_point = session_model_context.get('start_point', None)
 
-    n_sample_points = 40
+    if start_point is None:
+        logger.info(f'Session [{asession.token}] created start point {start_point}')
+        start_point = torch.randn(1, LATENT_DIM).to(device)
+        asession.set_value('start_point', start_point)
+    # end_point = torch.randn(1, LATENT_DIM).to(device)
+    end_point = find_random_point(device)
+    generated_images = []
+
+    n_sample_points = 20
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
 
@@ -103,15 +101,15 @@ def gen_images(ml_model):
         cost_ts = (time.time() - start_ts) * 1000
         logger.info(f'[{idx}]Image generated in {cost_ts} ms')
 
-    # update start_point
-    if gen_flag is True:
-        gen_flag = False
-
-    start_point = end_point
+    session_model_context.set_value('start_point', end_point)
+    logger.info(f'Session [{asession.token}] created end point {end_point}')
 
     logger.info(f'Generated images: {len(generated_images)}')
     return generated_images
 
+def find_random_point(device):
+    farest_point = torch.randn(1, LATENT_DIM).to(device)
+    return farest_point
 
 def find_farest_point(point, device):
     max_attempt = 100

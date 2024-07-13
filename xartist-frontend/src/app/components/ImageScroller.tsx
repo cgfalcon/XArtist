@@ -42,16 +42,16 @@ const ImageScroller = () => {
     return (
         <>
          <div className="relative flex items-center w-full">
-            <button onClick={() => handleArrowClick('left')} className="text-2xl absolute left-0 z-10 text-white">&lt;</button>
+            <button onClick={() => handleArrowClick('left')} className="text-2xl absolute left-0 z-11 text-white">&lt;</button>
             <div className="relative flex space-x-4 w-full object-cover">
                 {displayedModels.map((model, index) => (
-                    <div key={model.model_key} className="w-[600] inline-block">
+                    <div key={model.model_key} className="w-[600] inline-block hover:scale-110 hover:z-10">
                         <CanvasBlock model={model.model_key} playing={index === 1}/>
                         <p>{model.model_name}</p>
                     </div>
                 ))}
             </div>
-            <button onClick={() => handleArrowClick('right')} className="text-2xl absolute right-0 z-10 text-white">&gt;</button>
+            <button onClick={() => handleArrowClick('right')} className="text-2xl absolute right-0 z-11 text-white">&gt;</button>
          </div>
         </>
     );

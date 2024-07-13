@@ -1,39 +1,57 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
+import uuid
 import utils.logging as xartist_logging
-from flask import Blueprint, jsonify, request
+from functools import wraps
+from flask import Blueprint, jsonify, request, make_response, g
 
 logger = xartist_logging.app_logger
 
 authorization_api = Blueprint('authorization', __name__, url_prefix='/api/authorization')
 # Concurrent Control
-max_token_limit = 5
+MAX_TOKEN_LIMIT = 1
+SESSION_EXPIRE_HOURS = 2
 
 token_cache = {}
 
-class SessionToken:
+class ASession:
 
     def __init__(self, token, expire_at, data):
         self.token = token
         self.expire_at = expire_at # When this token will expire
         self.created_at = datetime.now()
-        self.data = data # Session Storage
+        self.data = data if data is not None else {}
+
 
     def get_value_map(self):
         return {'token': self.token, 'expire_at': self.expire_at}
 
+    def get_value(self, key, default_value = None):
+        v = self.data.get(key) if key in self.data else default_value
+        self.data[key] = v
+        return v
+
+    def put_session_data(self, data):
+        self.data = data
+
+    def put_session_data_kv(self, key, value):
+        self.data[key] = value
+
+    def __str__(self):
+        return f'ASession[Token: {self.token}, Expire at: {self.expire_at}, Created at: {self.created_at}]'
 
 def evict_expired_session():
-    if len(token_cache) >= max_token_limit:
+    if len(token_cache) >= MAX_TOKEN_LIMIT:
         # Iterate through cache to evict those expired
         current_time = datetime.now()
         expired_session = None
-        for it in token_cache.items():
-            if it.expire_at < current_time:
+        for key, item in token_cache.items():
+            if item.expire_at < current_time:
                 # Expired
-                expired_token = it
+                expired_session = item
                 break
 
-        if expired_session:
+        if expired_session is not None:
             token_cache.pop(expired_session.token)
             # Should have capacity now
             return True
@@ -47,44 +65,71 @@ def evict_expired_session():
 
 @authorization_api.route('/acquire_token', methods=['GET'])
 def acquire_token():
-    token = request.cookies['token']
+    try:
+        token = request.cookies.get('token')
 
-    asession = _try_gen_session()
-    if asession is None:
-        return jsonify({'error': 'Max token limit reached. Please try again later.'}), 407
+        asession = None
+        if token is not None:
+            asession = get_session(token)
 
-    return jsonify({'data': asession})
+        if token is None or asession is None:
+            asession = _try_gen_session()
+
+        if asession is None:
+            return jsonify({'code': 'Traffic_Control', 'error_msg': 'Max token limit reached. Please try again later.'}), 407
+
+        # Create a response object
+        response = make_response(jsonify({'data': asession.get_value_map()}))
+        # Set the token in the cookies if a new session was generated
+        response.set_cookie('token', asession.token)
+        return response
+    except Exception as e:
+        logger.error("Server Error", e)
+        return jsonify({'code': 'Server_Error', 'error_msg': 'Server Error'}), 500
+
+
 
 
 def _try_gen_session():
     logger.debug('Trying session token')
-    if len(token_cache) >= max_token_limit:
+    if len(token_cache) >= MAX_TOKEN_LIMIT:
         evictSuccess = evict_expired_session()
         logger.debug(f'Evicting session token :{evictSuccess}')
         if not evictSuccess:
             logger.info('Max token limit reached')
             return None
     asession = gen_session()
-    logger.into(f'Session generated :{asession}')
-    token_cache[asession.token] = asession.get_value_map()
+    logger.info(f'Session generated :{asession}')
+    token_cache[asession.token] = asession
     return asession
 
 
 def gen_session():
     access_token = uuid.uuid4()
-    access_token_obj = {
-        'access_token': str(access_token),
-        'timestamp': time.time(),
-    }
-    return access_token, access_token_obj
+    expire_at = datetime.utcnow() + timedelta(hours=SESSION_EXPIRE_HOURS)
+    asession = ASession(str(access_token), expire_at, None)
+    return asession
 
 
 def get_session(token):
     if token in token_cache:
         return token_cache[token]
     else:
-        # Session Expired
-        #   Try to acquire new token
-        asession = _try_gen_session()
-        if asession is None:
-            raise ValueError('Session Expired')
+        return None
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.cookies.get('token')
+        if not token:
+            return jsonify({'code': 'Token_Missing', 'error_msg': 'Token is missing'}), 401
+
+        session = get_session(token)
+        if not session:
+            return jsonify({'code': 'Token_Expired', 'error_msg': 'Token is invalid or expired'}), 401
+
+        g.asession = session  # Store the session object in the request context
+        return f(*args, **kwargs)
+
+    return decorated_function
