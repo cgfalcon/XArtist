@@ -4,9 +4,9 @@ import Navbar from "../components/NavBar";
 import React from "react";
 import { Slider } from "@material-tailwind/react";
 
-import { Component, useEffect, useState } from "react";  // for Latent Space Explorer
+import { Component, useEffect, useState, useRef } from "react"; 
 import ImageCanvas from "../components/ImageCanvas";  // for Latent Space Explorer
-import XYPlot from "../components/XYPlot";  // for Latent Space Explorer
+import XYPlot from "../components/XYPlot";  
 import * as tf from "@tensorflow/tfjs";  // for Latent Space Explorer
 import gaussian from "gaussian";  // for Latent Space Explorer
 import encodedData from "../encoded.json";  // for Latent Space Explorer
@@ -24,8 +24,15 @@ const Explore = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // *** Storage array and timer reference for scheduled processing ***
+  const coordinatesRef = useRef([]);
+  const timerRef = useRef(null);
+  
+  // // *** Buffer state to handle debouncing ***
+  // const hoverTimeoutRef = useRef(null);
+
   useEffect(() => {
-    // Generate 10,000 random dots
+    // Generate 3,000 random dots
     const generatedDots = [];
     for (let i = 0; i < 3000; i++) {
       generatedDots.push({
@@ -38,7 +45,6 @@ const Explore = () => {
     setLoading(false)
   }, []);
 
-  // fetching images
   // fetching images
   const convertDotToImg = async (x, y) => {
     try {
@@ -63,6 +69,36 @@ const Explore = () => {
     }
   };
 
+  // *** Scheduled Timer Function ***
+  useEffect(() => {
+    const processCoordinates = () => {
+      if (coordinatesRef.current.length > 0) {
+        const { x, y } = coordinatesRef.current.shift();
+        convertDotToImg(x, y);
+      }
+    };
+
+    timerRef.current = setInterval(processCoordinates, 5000); // Process every 0.5 seconds
+
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  // *** Hover handler to store coordinates ***
+  const handleHover = ({ x, y }) => {
+    coordinatesRef.current.push({ x, y });
+  };
+
+  // // *** Debounced hover handler ***
+  // const handleHover = ({ x, y }) => {
+  //   console.log(x, y);
+  //   if (hoverTimeoutRef.current) {
+  //     clearTimeout(hoverTimeoutRef.current);
+  //   }
+  //   hoverTimeoutRef.current = setTimeout(() => {
+  //     convertDotToImg(x, y);
+  //   }, 3000); // 3 seconds delay
+  // };
+
   return (
     <>
       {loading ? (<div className="flex justify-center items-center w-full">
@@ -81,15 +117,13 @@ const Explore = () => {
           yAccessor={d => d.y}
           // colorAccessor={d => d[2]}
           margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
-          onHover={({ x, y }) => {
-            console.log(x, y)
-            convertDotToImg(x, y);
-          }}
-        // onHover={({ x, y }) => {
+          onHover={handleHover} // *** Updated to use debounced handler ***
+          // onHover={({ x, y }) => {
+          //   console.log(x, y)
+          //   convertDotToImg(x, y);
+          // }}
 
-        //   // this.setState({ sigma: y, mu: x });
-        //   // this.getImage().then(digitImg => this.setState({ digitImg }));
-        //   }}
+
         />
         {/* {isHovering && <div style={styles.hoverText}>Hovering</div>} */}
       </div>
