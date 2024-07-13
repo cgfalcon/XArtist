@@ -17,6 +17,7 @@ import wandb
 from src.datasets import WikiArtDataset
 from src.configs import train_configs
 from src.gan_models import *
+from src.utils import fixed_latent_points
 
 
 def generate_latent_point(n_samples, latent_dim):
@@ -33,6 +34,16 @@ def generate_false_samples(g_model, device, batch_size=500, latent_dim=100):
     X = X.to(device)
     y = y.to(device)
     # print(f'False sample: {X.shape}, y: {y.shape}')
+    return X, y
+
+
+
+def generate_fixed_false_samples(g_model, device,  batch_size = 9):
+    X = fixed_latent_points.to(device)
+    X = g_model(X)
+    y = torch.zeros((batch_size, 1))
+    X = X.to(device)
+    y = y.to(device)
     return X, y
 
 
@@ -67,9 +78,12 @@ def save_plot(samples, epoch, n=3):
     plt.close()
 
 def summarize_performance(epoch, g_model, d_model, test_loader, device, batch_size, latent_dim=100):
-    X_false, y_false = generate_false_samples(g_model, device, batch_size, latent_dim)
+    if train_configs['IMAGE_SAMPLE_WITH_FIXED_POINTS']:
+        print(f'Images will sample from fixed spares points')
+        X_false, _ = generate_fixed_false_samples(g_model, device)
+    else:
+        X_false, _ = generate_false_samples(g_model, device, batch_size, latent_dim)
     X_false = X_false.to(device)
-    y_false = y_false.to(device)
 
     # Test model
     # test_model(X_false, batch_size, d_model, device, epoch, test_loader, y_false)
@@ -117,20 +131,17 @@ def generator_loss(output_fake):
 
 
 
-def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500, latent_dim=100, loss_type='bce', n_dis=1, n_gen=1):
-    adam_beta1 = train_configs['ADAM_BETA1']
-    adam_beta2 = train_configs['ADAM_BETA2']
-    optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(adam_beta1, adam_beta2))
-    optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(adam_beta1, adam_beta2))
+def train_gan(g_model, d_model, train_loader, device, optimizer_g, optimizer_d, epochs=100, batch_size=500, latent_dim=100, loss_type='bce', n_dis=1, n_gen=1, start_epoch=0):
+
     # g_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
     # d_scheduler = optim.lr_scheduler.ExponentialLR(optimizer_g, gamma=0.99)
 
     img_dumping_freq = int(train_configs['IMAGE_DUMPING_FREQUENCY'])
-    model_dumping_freq = int(train_configs['MODEL_DUMPING_FREQUENCY'])
+    model_dumping_freq_fn = train_configs['MODEL_DUMPING_FREQUENCY']
     log_freq = int(train_configs['LOG_FREQUENCY'])
     step = 0
 
-    for epoch in range(epochs):
+    for epoch in range(start_epoch, epochs):
         for b, batch_dataset in enumerate(train_loader):
             X_true, _ = batch_dataset
             X_true = X_true.to(device)
@@ -196,8 +207,9 @@ def train_gan(g_model, d_model, train_loader, device, epochs=100, batch_size=500
             # Plot performance every 5 epoch
             summarize_performance(epoch, g_model, d_model, None, device, batch_size, latent_dim)
 
+        model_dumping_freq = model_dumping_freq_fn(epoch)
         if (epoch + 1) % model_dumping_freq == 0:
-            save_model(epoch, g_model, d_model)
+            save_model(epoch, g_model, d_model, optimizer_g, optimizer_d)
 
 
 
@@ -216,13 +228,19 @@ def find_device():
         device = torch.device("cpu")  # Fallback to CPU
     return device
 
-def save_model(epoch, g_model, d_model):
+def save_model(epoch, g_model, d_model, optimizer_g, optimizer_d):
     generator_dumping_path = f"{train_configs['MODEL_DUMPING_PATH']}/generator_model_{(epoch + 1):03}.pt"
     # save the generator model tile file
-    torch.save(g_model.state_dict(), generator_dumping_path)
+
+    # Save the generator model and optimizer
+    torch.save({'gan_model_state_dict': g_model.state_dict(),
+                'gan_optimizer_state_dict': optimizer_g.state_dict()}, generator_dumping_path)
 
     discriminator_dumping_path = f"{train_configs['MODEL_DUMPING_PATH']}/discriminator_model_{(epoch + 1):03}.pt"
-    torch.save(d_model.state_dict(), discriminator_dumping_path)
+
+    # Save the discriminator model and optimizer
+    torch.save({'gan_model_state_dict': d_model.state_dict(),
+                'gan_optimizer_state_dict': optimizer_d.state_dict()}, discriminator_dumping_path)
     print(f'Generator is dumped to: {generator_dumping_path}, \nDiscriminator is dumped to :{discriminator_dumping_path}')
 
 
@@ -235,22 +253,22 @@ def custom_collate_fn(batch):
 
 def getGANModelInstances(train_configs):
     arch = train_configs['ARCH']
-    if arch == 'DCGAN':
-        return DCGANGeneratorNet(), DCGANDiscriminatorNet()
-    elif arch == 'SNDCGAN':
-        return DCGANGeneratorNet(), SNDCGANDiscriminatorNet()
+    if arch == 'DCGAN128':
+        return DCGANGeneratorNet128(), DCGANDiscriminatorNet128()
+    elif arch == 'SNDCGAN128':
+        return DCGANGeneratorNet128(), SNDCGANDiscriminatorNet128()
     elif arch =='SNDCGAN64':
         return DCGANGeneratorNet64(), SNDCGANDiscriminatorNet64()
     elif arch == 'DCGAN256':
         return DCGANGeneratorNet256(), DCGANDiscriminatorNet256()
     elif arch == 'SNDCGAN256':
         return DCGANGeneratorNet256(), SNDCGANDiscriminatorNet256()
-    elif arch == 'SNGAN':
-        return SNGANGeneratorNet(), SNGANDiscriminatorNet()
+    elif arch == 'SNGAN256':
+        return SNGANGeneratorNet256(), SNGANDiscriminatorNet256()
     elif arch == 'SNGAN128':
         return SNGANGeneratorNet128(), SNGANDiscriminatorNet128()
-    elif arch == 'ResGAN':
-        return ResGANGeneratorNet(), ResGANDiscriminatorNet()
+    elif arch == 'ResGAN256':
+        return ResGANGeneratorNet256(), ResGANDiscriminatorNet256()
     elif arch == 'ResGAN128':
         return ResGANGeneratorNet128(), ResGANDiscriminatorNet128()
     else:
@@ -273,14 +291,29 @@ def run() :
     dataloader = DataLoader(genra_dataset, batch_size=train_configs['BATCH_SIZE'],
                             shuffle=True, num_workers=train_configs['TORCH_WORKERS'], collate_fn=custom_collate_fn)
 
-    use_trained_model = False
+    start_epoch = 0
+    use_trained_model = train_configs['CTN_CONTINUE_TRAINING']
+    g_ckp = None
+    d_ckp = None
     # use_model = None
     if use_trained_model:
-        g_model_path = 'modes/generator_model_resnet_151.pt'
-        g_model = SNGANGeneratorNet()  # Ensure the class is defined or imported
-        g_model.load_state_dict(torch.load(g_model_path))
+        start_epoch = train_configs['CTN_CONTINUE_TRAINING_EPOCH']
+        g_model, d_model = getGANModelInstances(train_configs)
+        g_model_path = train_configs['CTN_GENERATOR_PATH']
+        d_model_path = train_configs['CTN_DISCRIMINATOR_PATH']
+
+        print(f'Training resume with: \n\tstart_epoch: {start_epoch}, \n\tg_model_path: {g_model_path}, \n\td_model_path: {d_model_path}')
+
+        g_ckp = torch.load(g_model_path, map_location=device)
+        g_model.load_state_dict(g_ckp if 'gan_model_state_dict' not in g_ckp else g_ckp['gan_model_state_dict'])
+        g_model.train()
         g_model.to(device)
-        g_model.eval()
+
+        d_ckp = torch.load(d_model_path)
+        d_model.load_state_dict(d_ckp if 'gan_model_state_dict' not in d_ckp else d_ckp['gan_model_state_dict'])
+        d_model.train()
+        d_model.to(device)
+
     else:
         g_model, d_model = getGANModelInstances(train_configs)
         print(f'G-Model: \n{g_model}')
@@ -293,6 +326,19 @@ def run() :
         g_model.to(device)
         g_model.apply(weights_init)
 
+    # Init optimizer
+    adam_beta1 = train_configs['ADAM_BETA1']
+    adam_beta2 = train_configs['ADAM_BETA2']
+    optimizer_g = torch.optim.Adam(g_model.parameters(), lr=train_configs['GEN_LR'], betas=(adam_beta1, adam_beta2))
+    optimizer_d = torch.optim.Adam(d_model.parameters(), lr=train_configs['DIS_LR'], betas=(adam_beta1, adam_beta2))
+
+    if g_ckp is not None and 'gan_optimizer_state_dict' in g_ckp:
+        optimizer_g.load_state_dict(g_ckp['gan_optimizer_state_dict'])
+        print(f'Optimizer for Generator resumed')
+
+    if d_ckp is not None and 'gan_optimizer_state_dict' in d_ckp:
+        optimizer_d.load_state_dict(d_ckp['gan_optimizer_state_dict'])
+        print(f'Optimizer for Discriminator resumed')
 
     # == Login wandb to enable data collection ==
     expr_key = datetime.now().strftime('%Y%m%d%H%M')
@@ -313,8 +359,8 @@ def run() :
     epoch = train_configs['EPOCHS']
     n_dis = train_configs['N_DIS']
     n_gen = train_configs['N_GEN']
-    train_gan(g_model, d_model, dataloader, device, epochs=epoch, batch_size=train_configs['BATCH_SIZE'],
-              latent_dim=train_configs['LATENT_DIM'], loss_type=train_configs['LOSS_FN'], n_dis=n_dis, n_gen=n_gen)
-    save_model(epoch, g_model, d_model)
+    train_gan(g_model, d_model, dataloader, device, optimizer_g, optimizer_d, epochs=epoch, batch_size=train_configs['BATCH_SIZE'],
+              latent_dim=train_configs['LATENT_DIM'], loss_type=train_configs['LOSS_FN'], n_dis=n_dis, n_gen=n_gen, start_epoch=start_epoch)
+    save_model(epoch, g_model, d_model, optimizer_g, optimizer_d)
 
 

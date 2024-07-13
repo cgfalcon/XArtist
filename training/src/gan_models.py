@@ -158,10 +158,10 @@ class DCGANGeneratorNet64(nn.Module):
         return x
 
 
-class DCGANDiscriminatorNet(nn.Module):
+class DCGANDiscriminatorNet128(nn.Module):
 
     def __init__(self):
-        super(DCGANDiscriminatorNet, self).__init__()
+        super(DCGANDiscriminatorNet128, self).__init__()
         self.cons_layers = nn.Sequential(
             # input is (nc) x 128 x 128
             nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1),
@@ -194,10 +194,10 @@ class DCGANDiscriminatorNet(nn.Module):
         return x
 
 
-class DCGANGeneratorNet(nn.Module):
+class DCGANGeneratorNet128(nn.Module):
 
     def __init__(self):
-        super(DCGANGeneratorNet, self).__init__()
+        super(DCGANGeneratorNet128, self).__init__()
         self.cons_layers = nn.Sequential(
             nn.Unflatten(1, (LATENT_DIM, 1, 1)),  # Corrected dimension ordering
 
@@ -231,11 +231,11 @@ class DCGANGeneratorNet(nn.Module):
         return x
 
 
-class SNDCGANDiscriminatorNet(nn.Module):
+class SNDCGANDiscriminatorNet128(nn.Module):
     '''Spectral Normalized DCGAN Discriminator'''
 
     def __init__(self):
-        super(SNDCGANDiscriminatorNet, self).__init__()
+        super(SNDCGANDiscriminatorNet128, self).__init__()
         self.cons_layers = nn.Sequential(
             # input is (nc) x 128 x 128
             nn.utils.spectral_norm(nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1)),
@@ -424,11 +424,11 @@ class SimpleGeneratorModel(nn.Module):
         return x
 
 
-class SNGANGeneratorNet(nn.Module):
+class SNGANGeneratorNet256(nn.Module):
     """256 * 256"""
 
     def __init__(self, *args, **kwargs):
-        super(SNGANGeneratorNet, self).__init__()
+        super(SNGANGeneratorNet256, self).__init__()
         self.l1 = nn.Linear(LATENT_DIM, (BOTTOM_SIZE ** 2) * GEN_FILTERS * 16)
 
         self.s2 = nn.Unflatten(1, (GEN_FILTERS * 16, BOTTOM_SIZE, BOTTOM_SIZE))  # Reshape to (C, 4, 4)
@@ -462,11 +462,11 @@ class SNGANGeneratorNet(nn.Module):
         return v
 
 
-class SNGANDiscriminatorNet(nn.Module):
+class SNGANDiscriminatorNet256(nn.Module):
     """256 * 256"""
 
     def __init__(self, *args, **kwargs):
-        super(SNGANDiscriminatorNet, self).__init__()
+        super(SNGANDiscriminatorNet256, self).__init__()
         self.b1 = SNResOptimizingBlock(INPUT_CHN, DIS_FILTERS)
         self.b2 = SNResBlockDownsample(DIS_FILTERS, DIS_FILTERS * 2)
         self.b3 = SNResBlockDownsample(DIS_FILTERS * 2, DIS_FILTERS * 4)
@@ -561,10 +561,10 @@ class SNGANDiscriminatorNet128(nn.Module):
         return output
 
 
-class ResGANGeneratorNet(nn.Module):
+class ResGANGeneratorNet256(nn.Module):
 
     def __init__(self, *args, **kwargs):
-        super(ResGANGeneratorNet, self).__init__()
+        super(ResGANGeneratorNet256, self).__init__()
         af = nn.LeakyReLU
         self.l1 = nn.Linear(LATENT_DIM, (BOTTOM_SIZE ** 2) * GEN_FILTERS * 16)
 
@@ -599,10 +599,10 @@ class ResGANGeneratorNet(nn.Module):
         return v
 
 
-class ResGANDiscriminatorNet(nn.Module):
+class ResGANDiscriminatorNet256(nn.Module):
 
     def __init__(self, *args, **kwargs):
-        super(ResGANDiscriminatorNet, self).__init__()
+        super(ResGANDiscriminatorNet256, self).__init__()
         af = nn.LeakyReLU
         self.b1 = ResOptimizingBlock(INPUT_CHN, DIS_FILTERS, activation=af)
         self.b2 = ResBlockDownsample(DIS_FILTERS, DIS_FILTERS * 2, activation=af)
