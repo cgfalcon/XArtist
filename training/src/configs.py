@@ -7,15 +7,15 @@ train_configs = {
   "MODEL_DUMPING_PATH": ".",
   "IMG_DUMPING_PATH": ".",
   "IMAGE_DUMPING_FREQUENCY": 2,
-  "MODEL_DUMPING_FREQUENCY": lambda epoch: 30 if epoch < 600 else 10, # Dumping model every 30 epochs if current epoch less than 600
+  "MODEL_DUMPING_FREQUENCY": lambda epoch: 30 if epoch < 600 else 10, # Dumping model every 30 epochs if current epoch less than 600, otherwise dumping every 10 epochs
   "LOG_FREQUENCY": 4,
   "IMAGE_SAMPLE_WITH_FIXED_POINTS": True, # Wither to use fixed points to generated checkpoint images
 
   # Training Resume Configs
-  "CTN_CONTINUE_TRAINING": False,
-  "CTN_CONTINUE_TRAINING_EPOCH": 300, # The epoch No. start from
-  "CTN_GENERATOR_PATH": "./generator_model_300.pt",
-  "CTN_DISCRIMINATOR_PATH": "./discriminator_model_300.pt",
+  "CTN_CONTINUE_TRAINING": False, # Wither to use pre-trained model. True | False
+  "CTN_CONTINUE_TRAINING_EPOCH": 300, # The epoch No. to start from
+  "CTN_GENERATOR_PATH": "./generator_model_300.pt", # Path to pre-trained generator model
+  "CTN_DISCRIMINATOR_PATH": "./discriminator_model_300.pt", # Path to pre-trained discriminator model
   # "CTN_OPTIMIZER_PATH": "",
 
   # Model Config
