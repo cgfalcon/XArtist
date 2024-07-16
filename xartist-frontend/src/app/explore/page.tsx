@@ -36,8 +36,8 @@ const Explore = () => {
     const generatedDots = [];
     for (let i = 0; i < 3000; i++) {
       generatedDots.push({
-        x: Math.random(),
-        y: Math.random(),
+        x: (Math.random() - 0.5) * 2,
+        y: (Math.random() - 0.5 ) * 2,
       });
     }
     setDots(generatedDots);
@@ -48,8 +48,8 @@ const Explore = () => {
   // fetching images
   const convertDotToImg = async (x, y) => {
     try {
-      const x_f = x * 10
-      const y_f = y * 10
+      const x_f = x
+      const y_f = y
       const response = await fetch(`http://127.0.0.1:5000/api/explorer/fetch_dots_to_img?1st_dot=${x_f}&2nd_dot=${y_f}`, {
         method: 'POST',
         headers: {
@@ -78,13 +78,14 @@ const Explore = () => {
       }
     };
 
-    timerRef.current = setInterval(processCoordinates, 5000); // Process every 0.5 seconds
+    timerRef.current = setInterval(processCoordinates, 1); // Process every 0.5 seconds
 
     return () => clearInterval(timerRef.current);
   }, []);
 
   // *** Hover handler to store coordinates ***
   const handleHover = ({ x, y }) => {
+    // convertDotToImg(x, y);
     coordinatesRef.current.push({ x, y });
   };
 

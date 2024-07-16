@@ -35,6 +35,7 @@ class MLModel:
         self.style = model_config['style']
         self.model_class = model_config['model_class']
         self.dim = 128 if 'dim' not in model_config else model_config['dim']
+        self.gen_filters = None if 'gen_filters' not in model_config else model_config['gen_filters']
         # load model
         self._load_model()
 
@@ -45,7 +46,10 @@ class MLModel:
 
         if hasattr(ml_models_def, self.model_class):
             cls = getattr(ml_models_def, self.model_class)
-            instance = cls()
+            if self.gen_filters is not None:
+                instance = cls(GEN_FILTERS=self.gen_filters)
+            else:
+                instance = cls()
             self.model_inst = instance
         else:
             print(f"Model Class {self.model_class} not found.")
@@ -63,7 +67,9 @@ class MLModel:
         model_path = os.path.join(current_directory, '..', self.model_filename)
 
         # Load model
-        self.model_inst.load_state_dict(torch.load(model_path, map_location=device))
+        g_ckp = torch.load(model_path, map_location=device)
+        self.model_inst.load_state_dict(g_ckp if 'gan_model_state_dict' not in g_ckp else g_ckp['gan_model_state_dict'])
+        # self.model_inst.load_state_dict(torch.load(model_path, map_location=device))
         self.model_inst.to(device)
         self.model_inst.eval()  # S
         print(f'Model {self.model_config_name} loaded')
@@ -95,6 +101,5 @@ class MLModelsRegistry:
 
 
 
-
-
 MLModelsRegistry = MLModelsRegistry(ProjectConfig)
+ml_default_device = _find_device()

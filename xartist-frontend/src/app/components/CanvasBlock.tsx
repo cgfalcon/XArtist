@@ -5,26 +5,28 @@ import { Button } from "@material-tailwind/react";
 import { useError } from "../context/ErrorContext";
 
 
-function CanvasBlock({ model, playing }) {
+function CanvasBlock({ model, playing, placeholder }) {
 
     const [index, setIndex] = useState(0);
     const [images, setImages] = useState([]);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(playing);
+    const [loading, setLoading] = useState(false);
+    const [hasBeenPlayed, setHasBeenPlayed] = useState(playing);
     const intervalRef = useRef(null);
     const { showError } = useError();
 
     // fetching images
     useEffect(() => {
         const fetchInitialImages = async () => {
+            setLoading(true);
             try {
-                const img_b64 = await fetchImages(model);
-                console.log('Fetched initilizing images:', img_b64);
-                if (Array.isArray(img_b64) && img_b64.length > 0) {
-                    setImages(img_b64);
+                const img_resp = await fetchImages(model);
+                console.log('Fetched initilizing images:', img_resp);
+                if (img_resp.success && Array.isArray(img_resp.data) && img_resp.data.length > 0) {
+                    setImages(img_resp.data);
                 } else {
                     console.error('Failed to fetch images: response is not an array');
-                    showError('Fetched images failed');
+                    showError(img_resp.error_msg);
                 }
                 setLoading(false); // Set loading to false after fetching images
             } catch (error) {
@@ -34,7 +36,11 @@ function CanvasBlock({ model, playing }) {
             }
         };
 
-        fetchInitialImages();
+        if (isPlaying) {
+            fetchInitialImages();
+            setHasBeenPlayed(true);
+        }
+
 
     }, [model, showError]);
 
@@ -46,17 +52,19 @@ function CanvasBlock({ model, playing }) {
                 //     model = 'impressionist_150'
                 // }
                 if (isPlaying) {
-                    const img_b64 = await fetchImages(model);
+                    const img_resp = await fetchImages(model);
                     console.log('Fetched images for model:', model);
-                    if (Array.isArray(img_b64) && img_b64.length > 0) {
+                   if (img_resp.success && Array.isArray(img_resp.data) && img_resp.data.length > 0) {
                         setImages(prevImages => {
-                            const newImages = [...prevImages, ...img_b64];
+                            const newImages = [...prevImages, ...img_resp.data];
                             console.log('Updated images state:', newImages.length);
                             return newImages;
                         });
+                        setLoading(false);
                     } else {
                         console.error('Failed to fetch images: response is not an array');
                         showError('Failed to fetch images');
+                        setLoading(false)
                     }
                 }
 
@@ -66,7 +74,7 @@ function CanvasBlock({ model, playing }) {
             }
         };
 
-        const intervalId = setInterval(inter_fetch, 1000);
+        const intervalId = setInterval(inter_fetch, 800);
 
         return () => clearInterval(intervalId);
     }, [model, isPlaying, showError])
@@ -75,12 +83,10 @@ function CanvasBlock({ model, playing }) {
     useEffect(() => {
         if (isPlaying) {
             if (images.length > 0) {
-                console.log('Loaded index:', index);
                 intervalRef.current = setInterval(() => {
-                    setIndex((prevIndex) => (prevIndex + 1) % images.length);
-                }, 40); // Change image every 3000 milliseconds (3 seconds)
-
-
+                    setIndex((prevIndex) =>  (prevIndex + 1) % images.length);
+                    console.log('Loaded index:', index);
+                }, 100); // Change image every 3000 milliseconds (3 seconds)
             }
         }
         return () => clearInterval(intervalRef.current);
@@ -89,6 +95,7 @@ function CanvasBlock({ model, playing }) {
 
     const togglePlayPause = () => {
         setIsPlaying(!isPlaying);
+        setHasBeenPlayed(true);
     };
 
     const handleDownload = () => {
@@ -134,10 +141,10 @@ function CanvasBlock({ model, playing }) {
                 ) : (
                     <>
                         <img
-                            src={`data:image/png;base64,${images[index]}`}
+                            src={hasBeenPlayed ? `data:image/png;base64,${images[index]}` : placeholder}
                             alt="Art Animation"
-                            style={{width: '500px', height: '500px'}}
-                            className="object-cover object-center w-512 h-512 max-w-full"
+                            // style={{width: '350px', height: '350px'}}
+                            className="object-cover object-center w-[400px] h-[400px] max-w-full"
                             // onMouseEnter={() => setIsPlaying(false)}
                             // onMouseLeave={() => setIsPlaying(true)}
                         />

@@ -50,6 +50,17 @@ ml_models:
     show_for_public: True
     dim: 256
     gen_filters: 128
+  gan256_hinge_landscape_660:
+    name: Impressionism
+    filename: models/generator_model_sndcgan256_landscape_660.pt
+    epoch: 660
+    device: mps
+    framework: pytorch
+    style: Landscape
+    model_class: DCGANGeneratorNet256
+    show_for_public: True
+    dim: 256
+    gen_filters: 64
   abstract_strip:
     name: Abstract Blocks
     filename: models/generator_model_sngan_genre_100.pt

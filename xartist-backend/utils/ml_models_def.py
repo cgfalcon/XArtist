@@ -147,7 +147,7 @@ class SNDCGANDiscriminatorNet(nn.Module):
 
 class DCGANGeneratorNet256(nn.Module):
 
-    def __init__(self, LATENT_DIM=LATENT_DIM, GEN_FILTERS=128, INPUT_CHN=3):
+    def __init__(self, LATENT_DIM=128, GEN_FILTERS=128, INPUT_CHN=3):
         super(DCGANGeneratorNet256, self).__init__()
         self.cons_layers = nn.Sequential(
             nn.Unflatten(1, (LATENT_DIM, 1, 1)),  # Corrected dimension ordering

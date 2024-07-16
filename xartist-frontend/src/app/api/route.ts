@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useError } from "../context/ErrorContext";
+import api from '../../utils/api';
 
 export const dynamic = 'force-dynamic' // defaults to auto
 export async function fetchImages(modelKey) {
@@ -14,13 +15,29 @@ export async function fetchImages(modelKey) {
         });
         const resp = await rest.json()
         console.log('Fetch success')
-        return resp.data
+        return resp
     } catch (error) {
         console.error('Failed to fetch images:', error);
     }
 
 }
 
+// export async function fetchImages(modelKey) {
+//     try {
+//         const rest = await api.post('http://localhost:5000/api/dynamic_block/fetch_images', { model: modelKey }, {
+//             // method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             }
+//         });
+//         const resp = await rest.json()
+//         console.log('Fetch success')
+//         return resp
+//     } catch (error) {
+//         console.error('Failed to fetch images:', error);
+//     }
+//
+// }
 
 export async function convertDotsToImage(first_dot, second_dot, third_dot) {
     const payload = {

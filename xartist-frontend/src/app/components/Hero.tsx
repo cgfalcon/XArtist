@@ -16,7 +16,7 @@ export default function Hero() {
             <div className="mx-auto max-w-2xl py-59 sm:py-48 lg:py-59">
                 <div className="hidden sm:mb-8 sm:flex sm:justify-center">
                     <div
-                        className="relative rounded-full px-3 py-1 text-sm leading-6 text-white ring-1 ring-gray-900/10 hover:ring-gray-900/20">
+                        className="relative rounded-full px-3 py-1 text-lg leading-6 text-white ring-1 ring-gray-900/10 hover:ring-gray-900/20">
                         Unlock your artistic potential.{' '}
                         <a href="#" className="font-semibold text-indigo-600">
                             <span className="absolute inset-0" aria-hidden="true"/>
@@ -25,10 +25,10 @@ export default function Hero() {
                     </div>
                 </div>
                 <div className="text-center">
-                    <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+                    <h1 className="text-10xl font-bold tracking-tight text-white sm:text-6xl">
                         Explore the Possibility of Generative-Art
                     </h1>
-                    <p className="mt-6 text-lg leading-8 text-white">
+                    <p className="mt-6 text-2xl leading-8 text-white">
                         An AI-driven generative art platform
                     </p>
                     <div className="mt-10 flex items-center justify-center gap-x-6">
