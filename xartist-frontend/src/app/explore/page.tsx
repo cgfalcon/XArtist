@@ -4,6 +4,8 @@ import Navbar from "../components/NavBar";
 import React from "react";
 import { Slider } from "@material-tailwind/react";
 
+import { useOpenCV } from "../../hooks/useOpenCV"  // for bicubic + sharpening
+
 import { Component, useEffect, useState, useRef } from "react";
 import ImageCanvas from "../components/ImageCanvas";  // for Latent Space Explorer
 import XYPlot from "../components/XYPlot";  
@@ -29,6 +31,8 @@ const Explore = () => {
   // *** Storage array and timer reference for scheduled processing ***
   const coordinatesRef = useRef([]);
   const timerRef = useRef(null);
+
+  const opencvLoaded = useOpenCV();  // for bicubic + sharpening
   
   // // *** Buffer state to handle debouncing ***
   // const hoverTimeoutRef = useRef(null);
@@ -89,7 +93,7 @@ const Explore = () => {
     timerRef.current = setInterval(processCoordinates, 1); // Process every 0.5 seconds
 
     return () => clearInterval(timerRef.current);
-  }, []);
+  }, [opencvLoaded]);
 
   // *** Hover handler to store coordinates ***
   const handleHover = ({ x, y }) => {

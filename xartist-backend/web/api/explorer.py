@@ -68,6 +68,7 @@ def show_3dots():
 
     return jsonify({'success': True, 'data': dots_3d.tolist()})
 
+
 @explorer_api.route('/fetch_dots_to_img', methods=['POST'])
 def generate_from_3dots():
     # c_model = MLModelsRegistry.get_model('autocoder')
@@ -114,6 +115,146 @@ def generate_from_3dots():
 
     return jsonify({'success': True, 'data': images_base64})
 
+
+@explorer_api.route('/fetch_dots_to_img_batch', methods=['POST'])
+def generate_from_3dots_batch():
+    # c_model = MLModelsRegistry.get_model('autocoder')
+    ts_start = time.time()
+    g_model = MLModelsRegistry.get_model('gan256_bce_impressionism_600')
+
+    # if c_model is None:
+    #     return jsonify({'success': False, 'error': 'MLModel not found'}), 404
+
+    if g_model is None:
+        return jsonify({'success': False, 'error': 'MLModel not found'}), 404
+
+    # point_3d = np.zeros((1,2), dtype=np.float32)
+    
+    # *** Previous version
+    # ratio1 = -1
+    # ratio2 = -1
+    
+    # *** Added: retrieve (x, y) coordinates from the POST request
+    data = request.json
+
+    try:
+        
+        # *** Added: get x,y coordinates of 2 dots
+        x1, y1 = float(data['x1']), float(data['y1'])
+        x2, y2 = float(data['x2']), float(data['y2'])        
+        
+        ratio1 = get_3d_dot('1st_dot')
+        ratio2 = get_3d_dot('2nd_dot')
+        #point_3d[0,2] = get_3d_dot('3rd_dot')
+
+    # *** Added: more Errors    
+    except (KeyError, TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'Invalid value'}), 402
+    
+    p1_128 = reverse_to_hd(x1, y1, g_model.device)
+    p2_128 = reverse_to_hd(x2, y2, g_model.device)
+
+    # logger.info(f'Generated 2d points: {point_128d}')
+
+    # point_128d = c_model.model_inst.decode(point_3d)
+    # point_128d = point_128d.to(g_model.device)
+    
+    #  *** Added: Generate images for each high-dimensional point
+    images = []
+    for point in hd_points:
+        output = g_model.model_inst(point)
+        img = output[0, :, :, :].detach().cpu().permute(1, 2, 0).numpy()
+        normalized_img = (img + 1) / 2 * 255
+        normalized_img = normalized_img.astype(np.uint8)
+        images.append(convert_to_jpg(normalized_img))
+
+    logger.info('Images generated from 2D points')
+
+    return jsonify({'success': True, 'data': images})    
+    
+    
+    '''
+    # *** Previous version
+    output = g_model.model_inst(point_128d)
+    img = output[0, :, :, :].detach().cpu().permute(1, 2, 0).numpy()
+    normalized_img = (img + 1) / 2 * 255
+    normalized_img = normalized_img.astype(np.uint8)
+
+    # SR
+    # sr_ts = time.time()
+    # sr_img = sr_model.predict(normalized_img)
+    # logger.info(f'SR time: {time.time() - sr_ts}')
+
+    ## Encode to base64
+    images_base64 = convert_to_jpg(normalized_img)
+
+    cost_ts = (time.time() - ts_start) * 1000
+    logger.info(f'Image generated in {cost_ts} ms')
+
+    return jsonify({'success': True, 'data': images_base64})
+    '''
+
+def gen_images(start_point, end_point):
+    # token = request.cookies.get('token')
+    device = ml_model.device
+
+    generated_images = []
+
+    n_sample_points = 12
+
+    trajectory = create_trajectory(start_point, end_point, n_sample_points)
+
+    g_model = ml_model.model_inst
+
+    for idx, inter_point in enumerate(trajectory):
+        start_ts = time.time()
+        output = g_model(inter_point)
+        img = output[0, :, :, :].detach().cpu().permute(1, 2, 0).numpy()
+        normalized_img = (img + 1) / 2 * 255
+        normalized_img = normalized_img.astype(np.uint8)
+
+        g_img = np.ascontiguousarray(normalized_img)
+        # Resize to 512 * 512
+        # SuperResolution
+        # sr_start = time.time()
+        # sr_img = sr_model.predict(np.array(g_img))
+        # logger.info(f'SuperResolution time: {time.time() - start_ts}')
+        generated_images.append(g_img)
+
+        cost_ts = (time.time() - start_ts) * 1000
+        logger.info(f'[{idx}]Image generated in {cost_ts} ms')
+
+    logger.info(f'Generated images: {len(generated_images)}')
+    return generated_images
+
+
+def find_random_point(device):
+    farest_point = torch.randn(1, LATENT_DIM).to(device)
+    return farest_point
+
+def find_farest_point(point, device):
+    max_attempt = 100
+    test_point = torch.randn(1, LATENT_DIM).to(device)
+    farest_point = test_point
+    max_dist = 0
+    for i in range(max_attempt):
+        test_point = torch.randn(1, LATENT_DIM).to(device)
+        dist = torch.linalg.norm(point - test_point)
+        if dist > max_dist:
+            max_dist = dist
+            farest_point = test_point
+
+    logger.info(f'Distance: {torch.linalg.norm(point - farest_point)}')
+    return farest_point
+
+
+def create_trajectory(start, end, n_samples):
+    direction = end - start
+    trajectory = [start + (i * direction) / (n_samples + 1) for i in range(n_samples + 2)]
+
+    return trajectory
+
+    
 def measure_classical_methods(ori_image, scale_factor, methods, sigma=1.0, strength=1.3):
     '''
     methods = ['nearest', 'bilinear', 'bicubic', 'lanczos']

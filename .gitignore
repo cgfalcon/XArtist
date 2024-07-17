@@ -3,3 +3,12 @@
 /training/cifar-10-batches-py
 /training/MNIST
 /training/xartist-frontend/node_modules
+/xartist-backend/.xartist_backend_venv
+/xartist-backend/__pycache__
+/xartist-backend/web/__pycache__
+/xartist-backend/app.log
+/xartist-backend/error.log
+/xartist-backend/flask.log
+/xartist-backend/log_file
+/xartist-backend/utils/__pycache__/
+/xartist-backend/web/api/__pycache__/
