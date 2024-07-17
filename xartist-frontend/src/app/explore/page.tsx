@@ -29,6 +29,8 @@ const Explore = () => {
   // *** Storage array and timer reference for scheduled processing ***
   const coordinatesRef = useRef([]);
   const timerRef = useRef(null);
+
+  const opencvLoaded = useOpenCV();  // for bicubic + sharpening
   
   // // *** Buffer state to handle debouncing ***
   // const hoverTimeoutRef = useRef(null);
@@ -105,7 +107,7 @@ const Explore = () => {
     timerRef.current = setInterval(processCoordinates, 1); // Process every 0.5 seconds
 
     return () => clearInterval(timerRef.current);
-  }, []);
+  }, [opencvLoaded]);
 
   // *** Hover handler to store coordinates ***
   const handleHover = ({ x, y }) => {

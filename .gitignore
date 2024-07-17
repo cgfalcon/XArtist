@@ -3,3 +3,4 @@
 /training/cifar-10-batches-py
 /training/MNIST
 /training/xartist-frontend/node_modules
+/xartist-backend/.xartist_backend_venv

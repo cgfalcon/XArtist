@@ -8,6 +8,27 @@ An virtual artist driven by AI
 - frontend. Mainly the React page of the product.
 - training. Focus on model traning and testing.
 
+# Backend Installation
+
+Go to the `xartist-backend` directory by the following command
+
+```shell
+cd xartist-backend
+```
+
+Create and activate virtual environment (named '.your_vitural_environment')
+
+```
+python -m venv .your_vitural_environment
+.your_vitural_environment\Scripts\activate.ps1
+```
+
+Install packages for python in the virtual environment listed in 'requirements.txt'
+
+```
+pip install -r .\requirements.txt
+```
+
 # FrontEnd Installation
 
 ```
@@ -23,7 +44,7 @@ npm install axios
 
 # How to open the webpage?
 
-Go to the `xartist-frontend` directory by the following commend
+Go to the `xartist-frontend` directory by the following command
 
 ```shell
 cd xartist-fronted
