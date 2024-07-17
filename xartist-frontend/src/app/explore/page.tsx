@@ -5,6 +5,8 @@ import React from "react";
 import { Slider } from "@material-tailwind/react";
 
 import { Component, useEffect, useState, useRef } from "react"; 
+import { useOpenCV } from "../../hooks/useOpenCV";  // for bicubic + sharpening
+import { measureClassicalMethods } from "../../utils/imageProcessing";  // for bicubic + sharpening
 import ImageCanvas from "../components/ImageCanvas";  // for Latent Space Explorer
 import XYPlot from "../components/XYPlot";  
 import * as tf from "@tensorflow/tfjs";  // for Latent Space Explorer
@@ -60,7 +62,29 @@ const Explore = () => {
       const imgResp = await response.json();
       console.log("Dots to img: ", imgResp);
       if (imgResp.data) {
-        setImage(imgResp.data);
+        // setImage(imgResp.data);
+
+        // *** Added for bicubic + sharpening ***
+        const img = new Image();
+        img.src = `data:image/png;base64,${imgResp.data}`;
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          if (opencvLoaded) {
+            const upscaledAndSharpened = await measureClassicalMethods(imageData, 2.0, 'bicubic');
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = upscaledAndSharpened.width;
+            outputCanvas.height = upscaledAndSharpened.height;
+            const outputCtx = outputCanvas.getContext('2d');
+            outputCtx.putImageData(upscaledAndSharpened, 0, 0);
+            setImage(outputCanvas.toDataURL());
+          }
+        };        
       } else {
         console.error('No image data found');
       }
@@ -130,7 +154,10 @@ const Explore = () => {
       </div>
       <div style={styles.right}>
         <img
-          src={`data:image/png;base64,${image}`}
+          // src={`data:image/png;base64,${image}`}
+          
+          src={image}  // *** Added for bicubic + sharpening ***
+          
           alt="Art Animation"
           style={{ width: '500px', height: '500px' }}
           className="object-cover object-center w-full h-256 max-w-full"
@@ -169,6 +196,9 @@ const styles = {
     alignItems: 'center',
   },
 };
+
+export default Explore;
+
 
 // class Explore extends Component<{}, { model, digitImg, mu, sigma:any}> {
 //   constructor(props) {
@@ -241,8 +271,6 @@ const styles = {
 //     );
 //   }
 // }
-
-export default Explore;
 
 
 // Working Static V_1
