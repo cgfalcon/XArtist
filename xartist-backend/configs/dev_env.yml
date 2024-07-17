@@ -61,6 +61,39 @@ ml_models:
     show_for_public: True
     dim: 256
     gen_filters: 64
+  gan256_hinge_artist_2400:
+    name: Artist Collection
+    filename: models/generator_model_sndcgan256_artist_2400.pt
+    epoch: 2400
+    device: mps
+    framework: pytorch
+    style: Artists Mix
+    model_class: DCGANGeneratorNet256
+    show_for_public: True
+    dim: 256
+    gen_filters: 64
+  gan256_hinge_portrait_420:
+    name: Portrait
+    filename: models/generator_model_portrait_420.pt
+    epoch: 420
+    device: mps
+    framework: pytorch
+    style: Portrait
+    model_class: DCGANGeneratorNet256
+    show_for_public: True
+    dim: 256
+    gen_filters: 64
+  gan256_cubism_landscape_030:
+    name: Cubism Landscape
+    filename: models/generator_model_cubism_landscpe_030.pt
+    epoch: 30
+    device: mps
+    framework: pytorch
+    style: Landscape
+    model_class: DCGANGeneratorNet256
+    show_for_public: True
+    dim: 256
+    gen_filters: 64
   abstract_strip:
     name: Abstract Blocks
     filename: models/generator_model_sngan_genre_100.pt
