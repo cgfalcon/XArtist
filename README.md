@@ -15,6 +15,9 @@ npm install next@latest react@latest react-dom@latest
 npm install tailwindcss@latest
 npm install @headlessui/react @heroicons/react
 npm i @material-tailwind/react
+npm i prop-types
+npm install d3
+npm install axios
 ```
 
 
