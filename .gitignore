@@ -4,3 +4,5 @@
 /training/MNIST
 /training/xartist-frontend/node_modules
 /xartist-backend/.xartist_backend_venv
+/xartist-backend/__pycache__
+ xartist-backend/web/__pycache__ 

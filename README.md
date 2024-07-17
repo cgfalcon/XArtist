@@ -16,17 +16,24 @@ Go to the `xartist-backend` directory by the following command
 cd xartist-backend
 ```
 
-Create and activate virtual environment (named '.your_vitural_environment')
+Create and activate virtual environment if you are using VSCode (for example, call it '.your_vitural_environment')
 
-```
+```shell
 python -m venv .your_vitural_environment
 .your_vitural_environment\Scripts\activate.ps1
 ```
 
 Install packages for python in the virtual environment listed in 'requirements.txt'
 
-```
+```shell
 pip install -r .\requirements.txt
+pip install torchvision 
+```
+
+and run the development server
+
+```shell
+python -m flask run
 ```
 
 # FrontEnd Installation
