@@ -73,7 +73,10 @@ def show_3dots():
 def generate_from_3dots():
     # c_model = MLModelsRegistry.get_model('autocoder')
     ts_start = time.time()
-    g_model = MLModelsRegistry.get_model('gan256_bce_impressionism_600')
+
+    default_model = 'gan256_bce_impressionism_600'
+    model_key = get_param_value('model_key', type=str, default=default_model)
+    g_model = MLModelsRegistry.get_model(model_key)
 
     # if c_model is None:
     #     return jsonify({'success': False, 'error': 'MLModel not found'}), 404
@@ -120,7 +123,10 @@ def generate_from_3dots():
 def generate_from_3dots_batch():
     # c_model = MLModelsRegistry.get_model('autocoder')
     ts_start = time.time()
-    g_model = MLModelsRegistry.get_model('gan256_bce_impressionism_600')
+
+    default_model = 'gan256_bce_impressionism_600'
+    model_key = get_param_value('model_key', type=str, default=default_model)
+    g_model = MLModelsRegistry.get_model(model_key)
 
     # if c_model is None:
     #     return jsonify({'success': False, 'error': 'MLModel not found'}), 404
@@ -148,45 +154,21 @@ def generate_from_3dots_batch():
     p1_128 = reverse_to_hd(x1, y1, g_model.device)
     p2_128 = reverse_to_hd(x2, y2, g_model.device)
 
-    images = gen_images(p1_128, p2_128)
+    images = gen_images(g_model.model_inst, p1_128, p2_128)
 
     logger.info(f'Batch Images generated from 2D points, {(time.time() - ts_start) * 1000} ms')
 
     return jsonify({'success': True, 'data': images})    
-    
-    
-    '''
-    # *** Previous version
-    output = g_model.model_inst(point_128d)
-    img = output[0, :, :, :].detach().cpu().permute(1, 2, 0).numpy()
-    normalized_img = (img + 1) / 2 * 255
-    normalized_img = normalized_img.astype(np.uint8)
 
-    # SR
-    # sr_ts = time.time()
-    # sr_img = sr_model.predict(normalized_img)
-    # logger.info(f'SR time: {time.time() - sr_ts}')
 
-    ## Encode to base64
-    images_base64 = convert_to_jpg(normalized_img)
-
-    cost_ts = (time.time() - ts_start) * 1000
-    logger.info(f'Image generated in {cost_ts} ms')
-
-    return jsonify({'success': True, 'data': images_base64})
-    '''
-
-def gen_images(start_point, end_point):
+def gen_images(g_model, start_point, end_point):
     # token = request.cookies.get('token')
-    device = ml_model.device
 
     generated_images = []
 
     n_sample_points = 12
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
-
-    g_model = ml_model.model_inst
 
     for idx, inter_point in enumerate(trajectory):
         start_ts = time.time()
@@ -266,13 +248,10 @@ def convert_to_jpg(img):
 
     return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
-def get_param_value(name):
+def get_param_value(name, type=float, default=None):
 
-    resp = request.args.get(name, type=float)
+    resp = request.args.get(name, default=default, type=type)
     if resp is None:
         raise ValueError('invalid value format')
-
-    if resp<-10.0 or resp>10.0:
-        raise ValueError('value out of range')
 
     return resp

@@ -79,7 +79,7 @@ const Explore = () => {
   // fetching images
   const convertDotToImg = async (x, y) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/explorer/fetch_dots_to_img?1st_dot=${x * 2}&2nd_dot=${y * 2}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/explorer/fetch_dots_to_img?1st_dot=${x * 2}&2nd_dot=${y * 2}&model_key=${selectedModel}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -101,6 +101,31 @@ const Explore = () => {
       console.error('Error fetching image:', error);
     }
   };
+
+   const batchConvertDotToImg = async (x1, y1, x2, y2) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/api/explorer/fetch_dots_to_img_batch?x1=${x1 * 2}&y1=${y1 * 2}&x2=${x2 * 2}&y2=${y2 * 2}&model_key=${selectedModel}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to fetch');
+      const imgResp = await response.json();
+      console.log("Dots to img: ", imgResp);
+      if (imgResp.data) {
+        setImage(imgResp.data);
+        // setImagesBuffer(prevBuffer => {
+        //   const newBuffer = [...prevBuffer, imgResp.data];
+        //   console.log("Image buffer size: ", newBuffer.length);
+        //   return newBuffer;
+        // });
+
+      } else {
+        console.error('No image data found');
+      }
+    } catch (error) {
+      console.error('Error fetching image:', error);
+    }
+  }
 
   // *** Scheduled Timer Function ***
   // useEffect(() => {
@@ -155,52 +180,45 @@ const Explore = () => {
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
       </div>) : (
-          <div className="flex flex-col items-start justify-center w-full h-screen">
+          <div className="flex flex-col items-center justify-center w-full h-screen">
             <div className="flex mb-5 w-full px-10">
-              <div className="w-48">
+              <div className="w-full max-w-xs ml-40">
                 <Select
-                label="Select Model"
-                value={selectedModel}
-                onChange={(e) => handleSelectChange(e)}
-              >
-                {models.map((model) => (
-                <Option key={model.model_key} value={model.model_key} className="text-white">
-                    {model.model_name}
-                  </Option>
-                ))}
-              </Select>
+                    label="Model"
+                    labelProps={{
+                      className: 'text-white text-ml',
+                    }}
+                    className="text-white"
+                    value={selectedModel}
+                    onChange={(e) => handleSelectChange(e)}
+                >
+                  {models.map((model) => (
+                      <Option key={model.model_key} value={model.model_key}>
+                        {model.model_name}
+                      </Option>
+                  ))}
+                </Select>
               </div>
             </div>
             <div className="flex w-full justify-center px-10">
-              <div className="flex items-start justify-center items-center w-1/2 h-full">
+              <div className="flex items-center justify-center w-1/2 h-full">
                 <XYPlot
                     data={dots}
                     width={400 - 10 - 10}
                     height={400 - 20 - 10}
-                    xAccessor={d => d.x}
-                    yAccessor={d => d.y}
-                    // colorAccessor={d => d[2]}
+                    xAccessor={(d) => d.x}
+                    yAccessor={(d) => d.y}
                     margin={{top: 20, bottom: 10, left: 10, right: 10}}
-                    onHover={handleHover} // *** Updated to use debounced handler ***
-                    // onHover={({ x, y }) => {
-                    //   console.log(x, y)
-                    //   convertDotToImg(x, y);
-                    // }}
-
+                    onHover={handleHover}
                 />
               </div>
               <div className="flex justify-center items-center w-1/2 h-full">
                 <img
                     src={`data:image/png;base64,${image}`}
-                    // src={`data:image/png;base64,${imagesBuffer[index]}`}
                     alt="Art Animation"
-                    style={{width: '400px', height: '400px'}}
-                    className="object-cover object-center w-full h-256 max-w-full"
-                    // onMouseEnter={() => setIsPlaying(false)}
-                    // onMouseLeave={() => setIsPlaying(true)}
+                    className="object-cover object-center w-96 h-96"
                 />
               </div>
-              {/* {isHovering && <div style={styles.hoverText}>Hovering</div>} */}
             </div>
           </div>
       )}
