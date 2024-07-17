@@ -35,11 +35,11 @@ const XYPlot = ({
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
         const yScale = d3.scaleLinear()
-            .domain([0, 1])
+            .domain([-1, 1])
             .range([height, 0]);
 
         const xScale = d3.scaleLinear()
-            .domain([0, 1])
+            .domain([-1, 1])
             // .domain(d3.extent(data, xAccessor))
             .range([0, width]);
 

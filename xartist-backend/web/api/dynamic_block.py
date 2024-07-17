@@ -4,7 +4,7 @@ import json
 import uuid
 import datetime
 import time
-
+import cv2
 import torch
 import base64
 import numpy as np
@@ -55,10 +55,33 @@ def fetch_images():
     return jsonify({'success': True, 'data': images_base64})
 
 
+def measure_classical_methods(ori_image, scale_factor, methods, sigma=1.0, strength=1.3):
+    '''
+    methods = ['nearest', 'bilinear', 'bicubic', 'lanczos']
+    '''
+    new_dimensions = (int(ori_image.shape[1] * scale_factor), int(ori_image.shape[0] * scale_factor))
+    all_methods = {
+        'nearest': cv2.INTER_NEAREST,
+        'bilinear': cv2.INTER_LINEAR,
+        'bicubic': cv2.INTER_CUBIC,
+        'lanczos': cv2.INTER_LANCZOS4
+    }
+    start_time = time.time()
+    upscaled_image = cv2.resize(ori_image, new_dimensions, interpolation=all_methods[methods])
+    blurred_image = cv2.GaussianBlur(upscaled_image, (0, 0), sigma)
+    sharpened_image = cv2.addWeighted(upscaled_image, 1 + strength, blurred_image, -strength, 0)
+    end_time = time.time()
+    process_time = (end_time - start_time) * 1000  # Convert to milliseconds
+    logger.info(f'Image enlarge process time: {process_time} ms')
+    return sharpened_image
+
 def convert_to_jpg(img):
-    image = Image.fromarray(img, 'RGB')
+    enlarged_image = measure_classical_methods(img, 2.0, 'bicubic')
+
+    image = Image.fromarray(enlarged_image, 'RGB')
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
+
     return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
 
@@ -82,7 +105,7 @@ def gen_images(ml_model):
     end_point = find_random_point(device)
     generated_images = []
 
-    n_sample_points = 40
+    n_sample_points = 12
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
 
