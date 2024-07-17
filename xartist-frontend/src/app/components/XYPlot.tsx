@@ -14,7 +14,7 @@ const XYPlot = ({
     const svgRef = useRef();
 
     useEffect(() => {
-        console.log("Data received by XYPlot:", data);
+        // console.log("Data received by XYPlot:", data);
         const svg = d3.select(svgRef.current).attr("border", 1);
 
         svg.selectAll('*').remove(); // Clear the existing chart
@@ -62,7 +62,7 @@ const XYPlot = ({
             const [x, y] = d3.pointer(event);
             onHover({ y: yScale.invert(y), x: xScale.invert(x) });
         });
-    }, [data, height, margin, onHover, width, xAccessor, yAccessor]);
+    }, [height, margin, onHover, width, xAccessor, yAccessor]);
 
     return (
         <svg

@@ -2,9 +2,8 @@
 
 import Navbar from "../components/NavBar";
 import React from "react";
-import { Slider } from "@material-tailwind/react";
+import { Slider, Select, Option } from "@material-tailwind/react";
 
-import { useOpenCV } from "../../hooks/useOpenCV"  // for bicubic + sharpening
 
 import { Component, useEffect, useState, useRef } from "react";
 import ImageCanvas from "../components/ImageCanvas";  // for Latent Space Explorer
@@ -13,7 +12,8 @@ import * as tf from "@tensorflow/tfjs";  // for Latent Space Explorer
 import gaussian from "gaussian";  // for Latent Space Explorer
 import encodedData from "../encoded.json";  // for Latent Space Explorer
 
-import "../page.module.css";  // for Latent Space Explorer
+import "../page.module.css";
+import {imag} from "@tensorflow/tfjs";  // for Latent Space Explorer
 
 const MODEL_PATH = "models/generatorjs/model.json";
 
@@ -21,18 +21,37 @@ interface Props {
 }
 
 const Explore = () => {
+  const models = [
+        { model_key: 'gan256_bce_impressionism_600', model_name: 'Impressionism', model_desc: "Collection of impressionism" },
+        { model_key: 'gan256_hinge_impressionism_600', model_name: 'Abstract Still-life', model_desc: "A mixture of impressionism & still life" },
+        { model_key: 'abstract_strip', model_name: 'Abstract Blocks', model_desc: "Strips patterns learned by GAN" },
+        { model_key: 'gan256_hinge_artist_2400', model_name: 'Artists Mix', model_desc: "Mix styles of wellknown artists" },
+        { model_key: 'gan256_hinge_portrait_420', model_name: 'Portrait', model_desc: "Portrait of WikiArt" },
+        { model_key: 'gan256_cubism_landscape_030', model_name: 'Cubism Landscape', model_desc: "Landscape applied by Cubism" },
+        { model_key: 'gan256_hinge_landscape_660', model_name: 'Landscape', model_desc: "Landscape of WikiArt" },
+    ];
+
+
+  const [selectedModel, setSelectedModel] = useState(models[0].model_key);
   const [dots, setDots] = useState([]);
   const [image, setImage] = useState(null);
+  const [imagesBuffer, setImagesBuffer] = useState([]);
+  const [index, setIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [loading, setLoading] = useState(true);
   const [imgLoading, setImgLoading] = useState(true);
+  const intervalRef = useRef(null);
 
 
   // *** Storage array and timer reference for scheduled processing ***
   const coordinatesRef = useRef([]);
-  const timerRef = useRef(null);
+  const fetchTimerRef = useRef(null);
+  const displayTimerRef = useRef(null);
 
-  const opencvLoaded = useOpenCV();  // for bicubic + sharpening
+    // Handle model selection change
+  const handleSelectChange = (value) => {
+    setSelectedModel(value);
+  };
   
   // // *** Buffer state to handle debouncing ***
   // const hoverTimeoutRef = useRef(null);
@@ -47,32 +66,34 @@ const Explore = () => {
       });
     }
     setDots(generatedDots);
-    console.log(generatedDots);
-    setLoading(false)
+    convertDotToImg(0.1, 0.1);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
     // Generate 3,000 random dots
     convertDotToImg(0.1, 0.1)
-    setImgLoading(false)
+    // setImgLoading(false)
   }, []);
 
   // fetching images
   const convertDotToImg = async (x, y) => {
     try {
-      const x_f = x
-      const y_f = y
-      const response = await fetch(`http://127.0.0.1:5000/api/explorer/fetch_dots_to_img?1st_dot=${x_f}&2nd_dot=${y_f}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/explorer/fetch_dots_to_img?1st_dot=${x * 2}&2nd_dot=${y * 2}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      }); // Adjust the API endpoint as necessary
+        headers: { 'Content-Type': 'application/json' },
+      });
       if (!response.ok) throw new Error('Failed to fetch');
       const imgResp = await response.json();
       console.log("Dots to img: ", imgResp);
       if (imgResp.data) {
         setImage(imgResp.data);
+        // setImagesBuffer(prevBuffer => {
+        //   const newBuffer = [...prevBuffer, imgResp.data];
+        //   console.log("Image buffer size: ", newBuffer.length);
+        //   return newBuffer;
+        // });
+
       } else {
         console.error('No image data found');
       }
@@ -82,25 +103,37 @@ const Explore = () => {
   };
 
   // *** Scheduled Timer Function ***
-  useEffect(() => {
-    const processCoordinates = () => {
-      if (coordinatesRef.current.length > 0) {
-        const { x, y } = coordinatesRef.current.shift();
-        convertDotToImg(x, y);
-      }
-    };
-
-    timerRef.current = setInterval(processCoordinates, 1); // Process every 0.5 seconds
-
-    return () => clearInterval(timerRef.current);
-  }, [opencvLoaded]);
-
+  // useEffect(() => {
+  //   const processCoordinates = () => {
+  //     if (coordinatesRef.current.length > 0) {
+  //       const { x, y } = coordinatesRef.current.shift();
+  //       convertDotToImg(x, y);
+  //     }
+  //   };
+  //
+  //   fetchTimerRef.current = setInterval(processCoordinates, 30);
+  //   return () => clearInterval(fetchTimerRef.current);
+  // }, []);
+  //
   // *** Hover handler to store coordinates ***
   const handleHover = ({ x, y }) => {
-    // convertDotToImg(x, y);
+    convertDotToImg(x, y);
     // console.log(x, y);
-    coordinatesRef.current.push({ x, y });
+    // coordinatesRef.current.push({ x, y });
   };
+
+  // Set looping index
+  // useEffect(() => {
+  //   if (imagesBuffer.length > 0) {
+  //     displayTimerRef.current = setInterval(() => {
+  //       setIndex((prevIndex) => Math.min(prevIndex + 1, imagesBuffer.length - 1));
+  //       console.log('Loaded index:', index, ' , BufferSize: ', imagesBuffer.length);
+  //     }, 10);
+  //   }
+  //
+  //   return () => clearInterval(displayTimerRef.current);
+  //
+  // }, [imagesBuffer.length]);
 
   // // *** Debounced hover handler ***
   // const handleHover = ({ x, y }) => {
@@ -121,47 +154,58 @@ const Explore = () => {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
-      </div>) : (<div style={styles.container}>
-      <div style={styles.left}>
-        <XYPlot
-          data={dots}
-          width={500 - 10 - 10}
-          height={500 - 20 - 10}
-          xAccessor={d => d.x}
-          yAccessor={d => d.y}
-          // colorAccessor={d => d[2]}
-          margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
-          onHover={handleHover} // *** Updated to use debounced handler ***
-          // onHover={({ x, y }) => {
-          //   console.log(x, y)
-          //   convertDotToImg(x, y);
-          // }}
+      </div>) : (
+          <div className="flex flex-col items-start justify-center w-full h-screen">
+            <div className="flex mb-5 w-full px-10">
+              <div className="w-48">
+                <Select
+                label="Select Model"
+                value={selectedModel}
+                onChange={(e) => handleSelectChange(e)}
+              >
+                {models.map((model) => (
+                <Option key={model.model_key} value={model.model_key} className="text-white">
+                    {model.model_name}
+                  </Option>
+                ))}
+              </Select>
+              </div>
+            </div>
+            <div className="flex w-full justify-center px-10">
+              <div className="flex items-start justify-center items-center w-1/2 h-full">
+                <XYPlot
+                    data={dots}
+                    width={400 - 10 - 10}
+                    height={400 - 20 - 10}
+                    xAccessor={d => d.x}
+                    yAccessor={d => d.y}
+                    // colorAccessor={d => d[2]}
+                    margin={{top: 20, bottom: 10, left: 10, right: 10}}
+                    onHover={handleHover} // *** Updated to use debounced handler ***
+                    // onHover={({ x, y }) => {
+                    //   console.log(x, y)
+                    //   convertDotToImg(x, y);
+                    // }}
 
-
-        />
-        {/* {isHovering && <div style={styles.hoverText}>Hovering</div>} */}
-      </div>
-      <div style={styles.right}>
-        { !image ? (<div className="flex justify-center items-center w-full">
-        <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-             viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-        </svg>
-      </div>) : (<img
-          src={`data:image/png;base64,${image}`}
-          alt="Art Animation"
-          style={{ width: '400px', height: '400px' }}
-          className="object-cover object-center w-full h-256 max-w-full"
-        // onMouseEnter={() => setIsPlaying(false)}
-        // onMouseLeave={() => setIsPlaying(true)}
-        />)}
-
-        {/* <ImageCanvas /> */}
-      </div>
-    </div >)}
+                />
+              </div>
+              <div className="flex justify-center items-center w-1/2 h-full">
+                <img
+                    src={`data:image/png;base64,${image}`}
+                    // src={`data:image/png;base64,${imagesBuffer[index]}`}
+                    alt="Art Animation"
+                    style={{width: '400px', height: '400px'}}
+                    className="object-cover object-center w-full h-256 max-w-full"
+                    // onMouseEnter={() => setIsPlaying(false)}
+                    // onMouseLeave={() => setIsPlaying(true)}
+                />
+              </div>
+              {/* {isHovering && <div style={styles.hoverText}>Hovering</div>} */}
+            </div>
+          </div>
+      )}
     </>
-    
+
   );
 };
 

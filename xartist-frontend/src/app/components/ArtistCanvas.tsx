@@ -4,7 +4,7 @@ import CanvasBlock from "@/app/components/CanvasBlock";
 import ImageScroller from "@/app/components/ImageScroller";
 
 function ArtistCanvas() {
-const [models, setModels] = useState([]);
+    const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState('');
     const [canvasLayout, setCanvasLayout] = useState("Single"); // "Grid" or "Single"
 
