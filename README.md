@@ -27,7 +27,10 @@ Install packages for python in the virtual environment listed in 'requirements.t
 
 ```shell
 pip install -r .\requirements.txt
-pip install torchvision 
+pip install torchvision
+pip install ISR --no-deps
+pip install tensorflow
+pip install matplotlib
 ```
 
 and run the development server
