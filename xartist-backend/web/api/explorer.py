@@ -85,8 +85,8 @@ def generate_from_3dots():
     ratio1 = -1
     ratio2 = -1
     try:
-        ratio1 = get_3d_dot('1st_dot')
-        ratio2 = get_3d_dot('2nd_dot')
+        ratio1 = get_param_value('1st_dot')
+        ratio2 = get_param_value('2nd_dot')
         #point_3d[0,2] = get_3d_dot('3rd_dot')
     except ValueError:
         return jsonify({'success': False, 'error': 'Invalid value'}), 402
@@ -133,19 +133,13 @@ def generate_from_3dots_batch():
     # *** Previous version
     # ratio1 = -1
     # ratio2 = -1
-    
-    # *** Added: retrieve (x, y) coordinates from the POST request
-    data = request.json
 
     try:
         
         # *** Added: get x,y coordinates of 2 dots
-        x1, y1 = float(data['x1']), float(data['y1'])
-        x2, y2 = float(data['x2']), float(data['y2'])        
-        
-        ratio1 = get_3d_dot('1st_dot')
-        ratio2 = get_3d_dot('2nd_dot')
-        #point_3d[0,2] = get_3d_dot('3rd_dot')
+        x1, y1 = get_param_value('x1'), get_param_value('y1')
+        x2, y2 = get_param_value('x2'), get_param_value('y2')
+        logger.info(f'Point1 {x1}, {y1}, Point2: {x2}, {y2}')
 
     # *** Added: more Errors    
     except (KeyError, TypeError, ValueError):
@@ -154,21 +148,9 @@ def generate_from_3dots_batch():
     p1_128 = reverse_to_hd(x1, y1, g_model.device)
     p2_128 = reverse_to_hd(x2, y2, g_model.device)
 
-    # logger.info(f'Generated 2d points: {point_128d}')
+    images = gen_images(p1_128, p2_128)
 
-    # point_128d = c_model.model_inst.decode(point_3d)
-    # point_128d = point_128d.to(g_model.device)
-    
-    #  *** Added: Generate images for each high-dimensional point
-    images = []
-    for point in hd_points:
-        output = g_model.model_inst(point)
-        img = output[0, :, :, :].detach().cpu().permute(1, 2, 0).numpy()
-        normalized_img = (img + 1) / 2 * 255
-        normalized_img = normalized_img.astype(np.uint8)
-        images.append(convert_to_jpg(normalized_img))
-
-    logger.info('Images generated from 2D points')
+    logger.info(f'Batch Images generated from 2D points, {(time.time() - ts_start) * 1000} ms')
 
     return jsonify({'success': True, 'data': images})    
     
@@ -284,7 +266,7 @@ def convert_to_jpg(img):
 
     return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
-def get_3d_dot(name):
+def get_param_value(name):
 
     resp = request.args.get(name, type=float)
     if resp is None:
