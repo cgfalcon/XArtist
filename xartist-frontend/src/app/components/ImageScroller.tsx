@@ -55,7 +55,7 @@ const ImageScroller = () => {
             <div className="relative flex space-x-1 w-full object-cover">
                 {displayedModels.map((model, index) => (
                     <div key={model.model_key} className="w-[256] inline-block hover:scale-105 ease-in-out duration-200 hover:z-10">
-                        <CanvasBlock model={model.model_key} playing={index === currentIndex} placeholder={img_placeholders[index]}/>
+                        <CanvasBlock id={{index}} model={model.model_key} playing={index === currentIndex} placeholder={img_placeholders[index]}/>
                         <p>{model.model_name}</p>
                     </div>
                 ))}

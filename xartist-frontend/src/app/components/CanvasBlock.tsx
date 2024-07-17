@@ -5,7 +5,7 @@ import { Button } from "@material-tailwind/react";
 import { useError } from "../context/ErrorContext";
 
 
-function CanvasBlock({ model, playing, placeholder }) {
+function CanvasBlock({ id, model, playing, placeholder }) {
 
     const [index, setIndex] = useState(0);
     const [images, setImages] = useState([]);
@@ -15,34 +15,34 @@ function CanvasBlock({ model, playing, placeholder }) {
     const intervalRef = useRef(null);
     const { showError } = useError();
 
-    // fetching images
-    useEffect(() => {
-        const fetchInitialImages = async () => {
-            setLoading(true);
-            try {
-                const img_resp = await fetchImages(model);
-                console.log('Fetched initilizing images:', img_resp);
-                if (img_resp.success && Array.isArray(img_resp.data) && img_resp.data.length > 0) {
-                    setImages(img_resp.data);
-                } else {
-                    console.error('Failed to fetch images: response is not an array');
-                    showError(img_resp.error_msg);
-                }
-                setLoading(false); // Set loading to false after fetching images
-            } catch (error) {
-                console.error('Failed to fetch images:', error);
-                showError(error.response?.data?.error_msg || 'Failed to fetch images');
-                setLoading(false); // Set loading to false even if there's an error
-            }
-        };
-
-        if (isPlaying) {
-            fetchInitialImages();
-            setHasBeenPlayed(true);
-        }
-
-
-    }, [model, showError]);
+    // fetching initializing images
+    // useEffect(() => {
+    //     const fetchInitialImages = async () => {
+    //         setLoading(true);
+    //         try {
+    //             const img_resp = await fetchImages(model);
+    //             console.log('CanvasBlock[', id, '] Fetched initializing images:', img_resp);
+    //             if (img_resp.success && Array.isArray(img_resp.data) && img_resp.data.length > 0) {
+    //                 setImages(img_resp.data);
+    //             } else {
+    //                 console.error('Failed to fetch images: response is not an array');
+    //                 showError(img_resp.error_msg);
+    //             }
+    //             setLoading(false); // Set loading to false after fetching images
+    //         } catch (error) {
+    //             console.error('Failed to fetch images:', error);
+    //             showError(error.response?.data?.error_msg || 'Failed to fetch images');
+    //             setLoading(false); // Set loading to false even if there's an error
+    //         }
+    //     };
+    //
+    //     if (isPlaying) {
+    //         fetchInitialImages();
+    //         setHasBeenPlayed(true);
+    //     }
+    //
+    //
+    // }, [model, showError]);
 
     // fetching images continously
     useEffect(() => {
@@ -53,16 +53,16 @@ function CanvasBlock({ model, playing, placeholder }) {
                 // }
                 if (isPlaying) {
                     const img_resp = await fetchImages(model);
-                    console.log('Fetched images for model:', model);
+                    console.log('CanvasBlock[', id, '] Fetched images for model:', model);
                    if (img_resp.success && Array.isArray(img_resp.data) && img_resp.data.length > 0) {
                         setImages(prevImages => {
                             const newImages = [...prevImages, ...img_resp.data];
-                            console.log('Updated images state:', newImages.length);
+                            console.log('CanvasBlock[', id, '] Updated images state:', newImages.length);
                             return newImages;
                         });
                         setLoading(false);
                     } else {
-                        console.error('Failed to fetch images: response is not an array');
+                        console.error('CancasBlock[', id, '] Failed to fetch images: response is not an array');
                         showError('Failed to fetch images');
                         setLoading(false)
                     }
@@ -85,7 +85,7 @@ function CanvasBlock({ model, playing, placeholder }) {
             if (images.length > 0) {
                 intervalRef.current = setInterval(() => {
                     setIndex((prevIndex) =>  (prevIndex + 1) % images.length);
-                    console.log('Loaded index:', index);
+                    console.log('CancasBlock[', id, '] Loaded index:', index);
                 }, 100); // Change image every 3000 milliseconds (3 seconds)
             }
         }
