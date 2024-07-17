@@ -4,6 +4,8 @@ import Navbar from "../components/NavBar";
 import React from "react";
 import { Slider } from "@material-tailwind/react";
 
+import { useOpenCV } from "../../hooks/useOpenCV"  // for bicubic + sharpening
+
 import { Component, useEffect, useState, useRef } from "react";
 import ImageCanvas from "../components/ImageCanvas";  // for Latent Space Explorer
 import XYPlot from "../components/XYPlot";  

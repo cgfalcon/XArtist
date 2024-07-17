@@ -31,6 +31,7 @@ pip install torchvision
 pip install ISR --no-deps
 pip install tensorflow
 pip install matplotlib
+pip install opencv-python
 ```
 
 and run the development server
