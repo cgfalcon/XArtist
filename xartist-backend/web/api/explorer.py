@@ -24,13 +24,31 @@ explorer_api = Blueprint('explorer', __name__, url_prefix='/api/explorer')
 
 logger = xartist_logging.app_logger
 
+def find_farest_point(point, device):
+    max_attempt = 100
+    test_point = torch.randn(1, LATENT_DIM).to(device)
+    farest_point = test_point
+    max_dist = 0
+    for i in range(max_attempt):
+        test_point = torch.randn(1, LATENT_DIM).to(device)
+        dist = torch.linalg.norm(point - test_point)
+        if dist > max_dist:
+            max_dist = dist
+            farest_point = test_point
+
+    logger.info(f'Distance: {torch.linalg.norm(point - farest_point)}')
+    return farest_point
+
+
 seed_seq = 1
-torch.manual_seed(seed_seq)
+# torch.manual_seed(seed_seq)
 corners_2d = torch.zeros((4, LATENT_DIM))
-corners_2d[0] = -1 + 2 * torch.rand(1, LATENT_DIM)
+p1 = torch.rand(1, LATENT_DIM, device=ml_default_device)
+p2 = find_farest_point(p1, ml_default_device)
+corners_2d[0] = -1 + 2 * p1
 corners_2d[1] = corners_2d[0] * -1
-torch.manual_seed(seed_seq * 100)
-corners_2d[2] =  -1 + 2 * torch.rand(1, LATENT_DIM)
+# torch.manual_seed(seed_seq * 100)
+corners_2d[2] = -1 + 2 * p2
 corners_2d[3] = corners_2d[2] * -1
 
 
@@ -166,7 +184,7 @@ def gen_images(g_model, start_point, end_point):
 
     generated_images = []
 
-    n_sample_points = 12
+    n_sample_points = 30
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
 
@@ -196,21 +214,6 @@ def find_random_point(device):
     farest_point = torch.randn(1, LATENT_DIM).to(device)
     return farest_point
 
-def find_farest_point(point, device):
-    max_attempt = 100
-    test_point = torch.randn(1, LATENT_DIM).to(device)
-    farest_point = test_point
-    max_dist = 0
-    for i in range(max_attempt):
-        test_point = torch.randn(1, LATENT_DIM).to(device)
-        dist = torch.linalg.norm(point - test_point)
-        if dist > max_dist:
-            max_dist = dist
-            farest_point = test_point
-
-    logger.info(f'Distance: {torch.linalg.norm(point - farest_point)}')
-    return farest_point
-
 
 def create_trajectory(start, end, n_samples):
     direction = end - start
@@ -218,6 +221,25 @@ def create_trajectory(start, end, n_samples):
 
     return trajectory
 
+
+def create_wave_trajectory(start, end, n_samples, amplitude=1, frequency=0.3):
+    # Ensure start and end are torch tensors and moved to the appropriate device
+    # start = torch.tensor(start, device=device)
+    # end = torch.tensor(end, device=device)
+
+    # Linear interpolation for base trajectory
+    direction = end - start
+    base_trajectory = [start + (i * direction) / (n_samples + 1) for i in range(n_samples + 2)]
+
+    # Create wave pattern
+    wave_trajectory = []
+    for i, point in enumerate(base_trajectory):
+        # Calculate the offset using a sine wave
+        offset = amplitude * np.sin(frequency * i)
+        wave_point = point + offset
+        wave_trajectory.append(wave_point)
+
+    return torch.stack(wave_trajectory)
     
 def measure_classical_methods(ori_image, scale_factor, methods, sigma=1.0, strength=1.3):
     '''

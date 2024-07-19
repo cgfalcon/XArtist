@@ -74,9 +74,9 @@ const ImageScroller = () => {
             >
                 {models.map((model, index) => (
                     <div key={model.model_key}
-                         className={`inline-block transform ${index === currentIndex ? 'scale-100' : 'scale-90'} ease-in-out duration-300`}
+                         className={`inline-block transform scale-95 hover:scale-100 ease-in-out duration-300`}
                     >
-                        <CanvasBlock id={index} model={model} viewing={index === currentIndex}
+                        <CanvasBlock id={index} model={model}
                                      playing={false}
                                      placeholder={img_placeholders[index]}/>
                     </div>

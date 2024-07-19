@@ -3,24 +3,29 @@ import React, {useEffect, useState, useRef} from "react";
 import {fetchImages} from "@/app/api/route";
 import { Button } from "@material-tailwind/react";
 import { useError } from "../context/ErrorContext";
+import {Simulate} from "react-dom/test-utils";
 
 
-function CanvasBlock({ id, model, viewing, playing, placeholder }) {
+function CanvasBlock({ id, model, playing, placeholder }) {
 
     const [index, setIndex] = useState(0);
     const [images, setImages] = useState([]);
-    const [isPlaying, setIsPlaying] = useState(playing);
+    const [isPlaying, setIsPlaying] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [isViewing, setViewing] = useState(viewing);
     const [hasBeenPlayed, setHasBeenPlayed] = useState(playing);
     const intervalRef = useRef(null);
     const { showError } = useError();
 
+    const [fps, setFps] = useState(0);
+    const frameCount = useRef(0);
+    const lastUpdate = useRef(performance.now());
+    const [fpsSeq, setFpsSeq] = useState([]);
+
+
     useEffect(() => {
         setIsPlaying(playing);
-        setViewing(viewing);
-        console.log('Block[', id, ']', isViewing)
-    }, [playing, viewing]);
+
+    }, [playing]);
 
     // fetching initializing images
     useEffect(() => {
@@ -81,7 +86,7 @@ function CanvasBlock({ id, model, viewing, playing, placeholder }) {
             }
         };
 
-        const intervalId = setInterval(inter_fetch, 800);
+        const intervalId = setInterval(inter_fetch, 2000);
 
         return () => clearInterval(intervalId);
     }, [model, isPlaying, showError])
@@ -91,9 +96,28 @@ function CanvasBlock({ id, model, viewing, playing, placeholder }) {
         if (isPlaying) {
             if (images.length > 0) {
                 intervalRef.current = setInterval(() => {
-                    setIndex((prevIndex) =>  (prevIndex + 1) % images.length);
+                    setIndex((prevIndex) => {
+                        const newIndex = (prevIndex + 1) % images.length;
+
+                        // FPS calculation
+                        frameCount.current++;
+                        const now = performance.now();
+                        const elapsed = now - lastUpdate.current;
+
+                        if (elapsed >= 1000) {
+                            const calculatedFps = (frameCount.current / elapsed) * 1000;
+                            const fpsValue = parseFloat(calculatedFps.toFixed(2));
+                            setFps(fpsValue);
+                            setFpsSeq((curr) => [...curr, fpsValue]);
+                            lastUpdate.current = now;
+                            frameCount.current = 0;
+                            console.log('CanvasBlock[', id, '-', model.model_name, '] FPS:', fpsSeq)
+                        }
+
+                        return newIndex;
+                    });
                     console.log('CancasBlock[', id, '] Loaded index:', index);
-                }, 100); // Change image every 3000 milliseconds (3 seconds)
+                }, 50); // Change image every 3000 milliseconds (3 seconds)
             } else {
                 setLoading(true);
             }
@@ -162,7 +186,7 @@ function CanvasBlock({ id, model, viewing, playing, placeholder }) {
                             // onMouseEnter={() => setIsPlaying(false)}
                             // onMouseLeave={() => setIsPlaying(true)}
                         />
-                        {isViewing ? (<div
+                        <div
                             className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-20 p-3 text-sm flex justify-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <Button
                                 className="rounded-full flex items-center gap-3"
@@ -205,7 +229,7 @@ function CanvasBlock({ id, model, viewing, playing, placeholder }) {
                                     Download
                                 </Button>
                             )}
-                        </div>) : (<></>)}
+                        </div>
 
                     </>
                 )}

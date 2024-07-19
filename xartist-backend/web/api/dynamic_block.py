@@ -105,7 +105,9 @@ def gen_images(ml_model):
     end_point = find_random_point(device)
     generated_images = []
 
-    n_sample_points = 12
+    n_sample_points = 80
+
+    logger.info(f'Session [{asession.token}], Start points: {start_point}, End point: {end_point}')
 
     trajectory = create_trajectory(start_point, end_point, n_sample_points)
 
@@ -130,7 +132,7 @@ def gen_images(ml_model):
         logger.info(f'[{idx}]Image generated in {cost_ts} ms')
 
     session_model_context['start_point'] = end_point
-    logger.info(f'Session [{asession.token}] created end point {end_point}')
+    logger.info(f'Session [{asession.token}] created end point')
 
     asession.put_session_data_kv(ml_model.model_config_name, session_model_context)
 
@@ -138,8 +140,8 @@ def gen_images(ml_model):
     return generated_images
 
 def find_random_point(device):
-    farest_point = torch.randn(1, LATENT_DIM).to(device)
-    return farest_point
+    random_point = torch.randn(1, LATENT_DIM).to(device)
+    return random_point
 
 def find_farest_point(point, device):
     max_attempt = 100
@@ -162,4 +164,24 @@ def create_trajectory(start, end, n_samples):
     trajectory = [start + (i * direction) / (n_samples + 1) for i in range(n_samples + 2)]
 
     return trajectory
+
+
+def create_wave_trajectory(start, end, n_samples, amplitude=1, frequency=0.3):
+    # Ensure start and end are torch tensors and moved to the appropriate device
+    # start = torch.tensor(start, device=device)
+    # end = torch.tensor(end, device=device)
+
+    # Linear interpolation for base trajectory
+    direction = end - start
+    base_trajectory = [start + (i * direction) / (n_samples + 1) for i in range(n_samples + 2)]
+
+    # Create wave pattern
+    wave_trajectory = []
+    for i, point in enumerate(base_trajectory):
+        # Calculate the offset using a sine wave
+        offset = amplitude * np.sin(frequency * i)
+        wave_point = point + offset
+        wave_trajectory.append(wave_point)
+
+    return torch.stack(wave_trajectory)
 

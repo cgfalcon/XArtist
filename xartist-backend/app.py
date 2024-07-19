@@ -18,6 +18,14 @@ app.register_blueprint(dynamic_block_api)
 app.register_blueprint(explorer_api)
 app.register_blueprint(authorization_api)
 
+@app.before_request
+def before_request():
+    headers = {'Access-Control-Allow-Origin': '*',
+               'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+               'Access-Control-Allow-Headers': 'Content-Type'}
+    if request.method.lower() == 'options':
+        return jsonify(headers), 200
+
 @app.route('/health')
 def health(name=None):
     return jsonify(
