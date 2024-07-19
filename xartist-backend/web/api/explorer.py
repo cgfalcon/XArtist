@@ -41,13 +41,13 @@ def find_farest_point(point, device):
 
 
 seed_seq = 1
-# torch.manual_seed(seed_seq)
+torch.manual_seed(seed_seq)
 corners_2d = torch.zeros((4, LATENT_DIM))
 p1 = torch.rand(1, LATENT_DIM, device=ml_default_device)
-p2 = find_farest_point(p1, ml_default_device)
+torch.manual_seed(seed_seq * 100)
+p2 = torch.rand(1, LATENT_DIM, device=ml_default_device)
 corners_2d[0] = -1 + 2 * p1
 corners_2d[1] = corners_2d[0] * -1
-# torch.manual_seed(seed_seq * 100)
 corners_2d[2] = -1 + 2 * p2
 corners_2d[3] = corners_2d[2] * -1
 
@@ -174,9 +174,12 @@ def generate_from_3dots_batch():
 
     images = gen_images(g_model.model_inst, p1_128, p2_128)
 
+    ## Encode to base64
+    images_base64 = [convert_to_jpg(img) for img in images]
+
     logger.info(f'Batch Images generated from 2D points, {(time.time() - ts_start) * 1000} ms')
 
-    return jsonify({'success': True, 'data': images})    
+    return jsonify({'success': True, 'data': images_base64})
 
 
 def gen_images(g_model, start_point, end_point):
