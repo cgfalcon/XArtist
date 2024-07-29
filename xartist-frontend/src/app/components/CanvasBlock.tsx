@@ -140,20 +140,6 @@ function CanvasBlock({ id, model, playing, placeholder }) {
         document.body.removeChild(link);
     };
 
-    const cacheImages = (newImages) => {
-        const cachedImages = JSON.parse(localStorage.getItem('cachedImages') || '[]');
-        const updatedCache = [...cachedImages, ...newImages];
-        localStorage.setItem('cachedImages', JSON.stringify(updatedCache));
-    }
-
-    const nextImage = () => {
-        setIndex((index + 1) % images.length);
-    };
-
-    const prevImage = () => {
-        setIndex((index - 1 + images.length) % images.length);
-    };
-
     // Sample metadata for the artwork
     const artworkDetails = {
         artist: "Anonymous",

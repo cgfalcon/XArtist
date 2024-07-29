@@ -43,10 +43,10 @@ const Explore = () => {
   const intervalRef = useRef(null);
 
 
-  // *** Storage array and timer reference for scheduled processing ***
-  const coordinatesRef = useRef([]);
-  const fetchTimerRef = useRef(null);
-  const displayTimerRef = useRef(null);
+  const [fps, setFps] = useState(0);
+  const frameCount = useRef(0);
+  const lastUpdate = useRef(performance.now());
+  const [fpsSeq, setFpsSeq] = useState([]);
 
     // Handle model selection change
   const handleSelectChange = (value) => {
@@ -85,9 +85,24 @@ const Explore = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch');
       const imgResp = await response.json();
-      console.log("Dots to img: ", imgResp);
+      // console.log("Dots to img: ", imgResp);
       if (imgResp.data) {
         setImage(imgResp.data);
+
+        // FPS calculation
+        frameCount.current++;
+        const now = performance.now();
+        const elapsed = now - lastUpdate.current;
+
+        if (elapsed >= 1000) {
+          const calculatedFps = (frameCount.current / elapsed) * 1000;
+          const fpsValue = parseFloat(calculatedFps.toFixed(2));
+          setFps(fpsValue);
+          setFpsSeq((curr) => [...curr, fpsValue]);
+          lastUpdate.current = now;
+          frameCount.current = 0;
+          console.log('Explorer-', selectedModel, '] FPS:', fpsSeq)
+        }
         // setImagesBuffer(prevBuffer => {
         //   const newBuffer = [...prevBuffer, imgResp.data];
         //   console.log("Image buffer size: ", newBuffer.length);
@@ -180,10 +195,24 @@ const Explore = () => {
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
       </div>) : (
-          <div className="flex flex-col items-center justify-center w-full h-screen">
+          <div className="flex flex-col items-center justify-center w-full h-screen py-4">
+            {/* Large Page Title */}
+            <h1 className="text-2xl font-bold text-white mb-2">Latent Space Explorer</h1>
+
+            {/* Subtitle */}
+            <h2 className="text-sm text-gray-300 mb-4">Visualize AI Art Generation in 2D</h2>
+
+            {/* Usage Instruction */}
+            <div className="text-gray-400 text-sm mb-4 max-w-3xl text-left px-10 self-start ml-40">
+              <p className="text-gray-300">Usage Instruction:</p> <p>- Hover over the dots in the left feature map to
+              generate corresponding images on the right.</p>
+              <p>- The position of your cursor in the feature map determines the characteristics of the generated
+                image.</p>
+              <p>- Choose the model you are interested in, and have fun!</p>
+            </div>
             <div className="flex mb-5 w-full px-10">
               <div className="w-full max-w-xs ml-40">
-                <Select
+              <Select
                     label="Model"
                     labelProps={{
                       className: 'text-white text-ml',
@@ -200,8 +229,8 @@ const Explore = () => {
                 </Select>
               </div>
             </div>
-            <div className="flex w-full justify-center px-10">
-              <div className="flex items-center justify-center w-1/2 h-full">
+            <div className="flex w-full justify-center px-10 flex-grow">
+              <div className="flex items-center justify-center w-1/2 h-4/5">
                 <XYPlot
                     data={dots}
                     width={400 - 10 - 10}
@@ -212,7 +241,7 @@ const Explore = () => {
                     onHover={handleHover}
                 />
               </div>
-              <div className="flex justify-center items-center w-1/2 h-full">
+              <div className="flex justify-center items-center w-1/2 h-4/5">
                 <img
                     src={`data:image/png;base64,${image}`}
                     alt="Art Animation"

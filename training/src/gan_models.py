@@ -395,6 +395,100 @@ class SNDCGANDiscriminatorNet256(nn.Module):
         x = self.cons_layers(x)
         return x
 
+class DCGANGeneratorNet512(nn.Module):
+
+    def __init__(self):
+        super(DCGANGeneratorNet512, self).__init__()
+        self.cons_layers = nn.Sequential(
+            nn.Unflatten(1, (LATENT_DIM, 1, 1)),  # Corrected dimension ordering
+
+            nn.ConvTranspose2d(LATENT_DIM, GEN_FILTERS * 32, 4, 1, 0),
+            nn.BatchNorm2d(GEN_FILTERS * 32),
+            FReLU(0.2, inplace=True),
+            # state size: (ngf*16) x 4 x 4
+            nn.ConvTranspose2d(GEN_FILTERS * 32, GEN_FILTERS * 32, 4, 2, 1),
+            nn.BatchNorm2d(GEN_FILTERS * 32),
+            FReLU(0.2, inplace=True),
+            # state size: (ngf*8) x 8 x 8
+            nn.ConvTranspose2d(GEN_FILTERS * 32, GEN_FILTERS * 16, 4, 2, 1),
+            nn.BatchNorm2d(GEN_FILTERS * 16),
+            FReLU(0.2, inplace=True),
+            # state size: (ngf*4) x 16 x 16
+            nn.ConvTranspose2d(GEN_FILTERS * 16, GEN_FILTERS * 8, 4, 2, 1),
+            nn.BatchNorm2d(GEN_FILTERS * 8),
+            FReLU(0.2, inplace=True),
+            # state size: (ngf*2) x 32 x 32
+            nn.ConvTranspose2d(GEN_FILTERS * 8, GEN_FILTERS * 4, 4, 2, 1),
+            nn.BatchNorm2d(GEN_FILTERS * 4),
+            FReLU(0.2, inplace=True),
+            # state size: (ngf*2) x 64 x 64
+            nn.ConvTranspose2d(GEN_FILTERS * 4, GEN_FILTERS * 2, 4, 2, 1),
+            # nn.BatchNorm2d(INPUT_CHN),
+            nn.BatchNorm2d(GEN_FILTERS * 2),
+            FReLU(0.2, inplace=True),
+            # state size: (ngf) x 128 x 128
+            nn.ConvTranspose2d(GEN_FILTERS * 2, GEN_FILTERS, 4, 2, 1),
+            # nn.BatchNorm2d(INPUT_CHN),
+            nn.BatchNorm2d(GEN_FILTERS),
+            FReLU(0.2, inplace=True),
+            # state size: 256 x 256
+            nn.ConvTranspose2d(GEN_FILTERS, INPUT_CHN, 4, 2, 1),
+            nn.Tanh()
+            # state size: (nc) x 512 x 512
+        )
+
+    def forward(self, x):
+        x = self.cons_layers(x)
+        return x
+
+class SNDCGANDiscriminatorNet512(nn.Module):
+
+    def __init__(self):
+        super(SNDCGANDiscriminatorNet512, self).__init__()
+        self.cons_layers = nn.Sequential(
+            # input is (nc) x 512 x 512
+            nn.utils.spectral_norm(nn.Conv2d(INPUT_CHN, DIS_FILTERS, 4, 2, 1)),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            # state size: 256 x 256
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS, DIS_FILTERS * 2, 4, 2, 1)),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            # state size: (ndf) x 128 x 128
+
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 2, DIS_FILTERS * 4, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            # state size: (ndf) x 64 x 64
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 4, DIS_FILTERS * 8, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*2) x 32 x 32
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 8, DIS_FILTERS * 16, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*4) x 16 x 16
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 16, DIS_FILTERS * 32, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 16),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*8) x 8 x 8
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 32, DIS_FILTERS * 32, 4, 2, 1)),
+            # nn.BatchNorm2d(DIS_FILTERS * 32),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size: (ndf*16) x 4 x 4
+            nn.utils.spectral_norm(nn.Conv2d(DIS_FILTERS * 32, 1, 4, 1, 0)),
+            # nn.Sigmoid(),
+            # state size: 1 x 1 x 1
+            nn.Flatten()
+            # state size: 1
+        )
+
+    def forward(self, x):
+        x = self.cons_layers(x)
+        return x
+
+
 class SimpleGeneratorModel(nn.Module):
 
     def __init__(self, dim=LATENT_DIM):

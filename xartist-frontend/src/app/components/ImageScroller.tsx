@@ -10,7 +10,7 @@ const ImageScroller = () => {
         { model_key: 'gan256_hinge_impressionism_600', model_name: 'Abstract Still-life', model_desc: "A mixture of impressionism & still life" },
         { model_key: 'abstract_strip', model_name: 'Abstract Blocks', model_desc: "Strips patterns learned by GAN" },
         { model_key: 'gan256_hinge_artist_2400', model_name: 'Artists Mix', model_desc: "Mix styles of wellknown artists" },
-        { model_key: 'gan256_hinge_portrait_420', model_name: 'Portrait', model_desc: "Portrait of WikiArt" },
+        // { model_key: 'gan256_hinge_portrait_420', model_name: 'Portrait', model_desc: "Portrait of WikiArt" },
         { model_key: 'gan256_cubism_landscape_030', model_name: 'Cubism Landscape', model_desc: "Landscape applied by Cubism" },
         { model_key: 'gan256_hinge_landscape_660', model_name: 'Landscape', model_desc: "Landscape of WikiArt" },
     ];

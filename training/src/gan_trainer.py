@@ -266,6 +266,8 @@ def getGANModelInstances(train_configs):
         return DCGANGeneratorNet256(), DCGANDiscriminatorNet256()
     elif arch == 'SNDCGAN256':
         return DCGANGeneratorNet256(), SNDCGANDiscriminatorNet256()
+    elif arch == 'SNDCGAN512':
+        return DCGANGeneratorNet512(), SNDCGANDiscriminatorNet512()
     elif arch == 'SNGAN256':
         return SNGANGeneratorNet256(), SNGANDiscriminatorNet256()
     elif arch == 'SNGAN128':
