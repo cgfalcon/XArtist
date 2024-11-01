@@ -1,7 +1,10 @@
 # XArtist
 
 'The Anonymous Artist' is an generative art platform, which integrated innovative mouse motion input to enhance user interaction and output intuitiveness.
-<img width="1512" alt="Screenshot 2024-07-20 at 20 57 55" src="https://github.com/user-attachments/assets/f70d9492-e353-47e7-a9aa-26360e37b970">
+
+<img width="1024" alt="Screenshot 2024-07-20 at 20 57 55" src="https://github.com/user-attachments/assets/f70d9492-e353-47e7-a9aa-26360e37b970">
+<img width="1024" alt="Screenshot 2024-07-20 at 21 00 50" src="https://github.com/user-attachments/assets/6d98452f-8e75-49d9-adb6-75e701f51c7e">
+<img width="1024" alt="Screenshot 2024-07-20 at 21 28 01" src="https://github.com/user-attachments/assets/a880bbab-6040-49a2-b14f-401d5bf9e11f">
 
 
 # Examples generated from the platform
@@ -15,7 +18,7 @@
 - frontend. Mainly the React page of the product.
 - training. Focus on model traning and testing.
 
-# Backend Installation
+## Backend Installation
 
 Go to the `xartist-backend` directory by the following command
 
@@ -47,7 +50,7 @@ and run the development server
 python -m flask run
 ```
 
-# FrontEnd Installation
+## FrontEnd Installation
 
 ```
 npm install next@latest react@latest react-dom@latest
@@ -60,7 +63,7 @@ npm install axios
 ```
 
 
-# How to open the webpage?
+## How to open the webpage?
 
 Go to the `xartist-frontend` directory by the following command
 
