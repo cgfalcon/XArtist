@@ -1,4 +1,4 @@
-# XArtist
+# The Anonymous Artist, aka XArtist
 
 'The Anonymous Artist' is an generative art platform, which integrated innovative mouse motion input to enhance user interaction and output intuitiveness.
 
