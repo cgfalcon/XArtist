@@ -1,5 +1,12 @@
 # XArtist
-An virtual artist driven by AI
+
+'The Anonymous Artist' is an generative art platform, which integrated innovative mouse motion input to enhance user interaction and output intuitiveness.
+<img width="1512" alt="Screenshot 2024-07-20 at 20 57 55" src="https://github.com/user-attachments/assets/f70d9492-e353-47e7-a9aa-26360e37b970">
+
+
+# Examples generated from the platform
+
+![af4e2634d163b2c9d7910e7fef26bb07](https://github.com/user-attachments/assets/aa05f470-92a8-493a-b5ce-80547e907c5c)
 
 
 # Structure of this project
